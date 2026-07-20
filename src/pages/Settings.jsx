@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings, Key, Cpu, Eye, EyeOff, CheckCircle, AlertTriangle, Save, RotateCcw } from 'lucide-react'
+import { Settings as SettingsIcon, Key, Cpu, Eye, EyeOff, CheckCircle, AlertTriangle, Save, RotateCcw } from 'lucide-react'
 import { AI_CONFIG, setAIConfig } from '../services/aiService'
 
 const MODE_INFO = {
