@@ -1,7 +1,8 @@
 import fs from 'fs'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
-const pdfParse = require('pdf-parse')
+const rawPdfParse = require('pdf-parse')
+const pdfParse = typeof rawPdfParse === 'function' ? rawPdfParse : rawPdfParse.default
 
 export function chunkText(text, chunkSize = 500, overlap = 50) {
   const words = text.split(/\s+/)
@@ -23,10 +24,12 @@ export async function parseDocument(filePath, fileType) {
 
     if (fileType.toLowerCase().includes('pdf')) {
       try {
-        const pdfData = await pdfParse(fileBuffer)
+        const pdfPromise = pdfParse(fileBuffer)
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('pdf-parse timed out after 3s')), 3000))
+        const pdfData = await Promise.race([pdfPromise, timeoutPromise])
         extractedText = pdfData.text || ''
       } catch (pdfErr) {
-        console.warn('pdf-parse failed, using regex fallback:', pdfErr.message)
+        console.warn('pdf-parse failed/timed out, using regex stream fallback:', pdfErr.message)
         extractedText = fileBuffer.toString('utf-8').replace(/[^\x20-\x7E\n\r\t]/g, ' ')
       }
     } else {

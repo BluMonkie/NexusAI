@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Upload, FileText, CheckCircle, Loader, Share2,
   Cpu, Layers, FileSearch, Tag, Calendar, User,
@@ -73,6 +73,7 @@ const SAMPLE_ENTITIES = [
 ]
 
 export default function DocumentIngestion() {
+  const navigate = useNavigate()
   const [dragOver, setDragOver] = useState(false)
   const [pipelineStep, setPipelineStep] = useState(-1)
   const [processingDoc, setProcessingDoc] = useState(null)
