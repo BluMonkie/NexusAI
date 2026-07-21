@@ -90,6 +90,46 @@ router.post('/upload', authenticateToken, requireRole('Plant Engineer', 'Plant A
       properties: { category, chunksCount: chunks.length },
     })
 
+    // Automatic Entity & Edge Extraction for Knowledge Graph
+    const entityMatches = rawText.match(/(?:[A-Z]{1,4}-\d{2,4}[A-Z]?|[A-Z]{3}-\d{4}-\d{2})/g) || []
+    const uniqueEntities = Array.from(new Set(entityMatches))
+
+    for (const entityId of uniqueEntities) {
+      if (entityId === docId) continue
+
+      // Determine entity type
+      let entityType = 'equipment'
+      if (entityId.startsWith('INC-')) entityType = 'incident'
+      else if (entityId.startsWith('SOP-')) entityType = 'document'
+      else if (entityId.startsWith('OISD-') || entityId.startsWith('ISO-')) entityType = 'compliance'
+
+      // Check if node exists
+      let nodeExists = db.data.graph_nodes.some(n => n.id === entityId)
+      if (!nodeExists) {
+        db.data.graph_nodes.push({
+          id: entityId,
+          label: entityId,
+          type: entityType,
+          area: area || 'Area 200',
+          status: 'active',
+          criticality: entityType === 'incident' ? 'high' : 'medium',
+          properties: { source_doc: file.originalname }
+        })
+      }
+
+      // Add connecting edge
+      const edgeId = `edge_${docId}_${entityId}`
+      if (!db.data.graph_edges.some(e => e.id === edgeId)) {
+        db.data.graph_edges.push({
+          id: edgeId,
+          source: docId,
+          target: entityId,
+          label: 'REFERENCES',
+          type: 'references'
+        })
+      }
+    }
+
     await db.write()
 
     res.status(201).json({
