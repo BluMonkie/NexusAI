@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, FileStack, Share2, MessageSquareText,
-  Wrench, ShieldCheck, BookOpen, Settings, ChevronLeft,
+  Wrench, ShieldCheck, BookOpen, ChevronLeft,
   ChevronRight, Zap
 } from 'lucide-react'
 
@@ -99,31 +99,6 @@ export default function Sidebar({ collapsed, onToggle }) {
           </NavLink>
         ))}
 
-        <div className="divider" style={{ margin: '12px 4px' }} />
-
-        <NavLink
-          to="/settings"
-          title="Settings"
-          style={({ isActive }) => ({
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: collapsed ? '10px' : '10px 12px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            borderRadius: 'var(--radius-md)',
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            transition: 'all var(--transition-fast)',
-            whiteSpace: 'nowrap',
-            color: isActive ? 'var(--blue-400)' : 'var(--text-muted)',
-            background: isActive ? 'rgba(14,165,233,0.1)' : 'transparent',
-            border: '1px solid transparent',
-          })}
-        >
-          <Settings size={18} style={{ flexShrink: 0 }} />
-          {!collapsed && <span>Settings</span>}
-        </NavLink>
       </nav>
 
       {/* System Status */}

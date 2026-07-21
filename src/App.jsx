@@ -8,7 +8,6 @@ import Copilot from './pages/Copilot'
 import MaintenanceRCA from './pages/MaintenanceRCA'
 import ComplianceIntelligence from './pages/ComplianceIntelligence'
 import LessonsLearned from './pages/LessonsLearned'
-import Settings from './pages/Settings'
 import { useState } from 'react'
 import './index.css'
 
@@ -31,7 +30,6 @@ export default function App() {
               <Route path="/maintenance" element={<MaintenanceRCA />} />
               <Route path="/compliance" element={<ComplianceIntelligence />} />
               <Route path="/lessons" element={<LessonsLearned />} />
-              <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>
         </div>
