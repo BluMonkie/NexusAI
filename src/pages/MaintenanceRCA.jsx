@@ -143,7 +143,7 @@ export default function MaintenanceRCA() {
           <div key={key} className="card">
             <div className="section-label mb-sm">{kpi.label}</div>
             <div className="stat-number" style={{ fontSize: '1.6rem', color: 'var(--text-primary)' }}>
-              {kpi.value}{kpi.unit}
+              {kpi.value} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>{kpi.unit}</span>
             </div>
             {kpi.trend && (
               <div style={{ marginTop: 4, fontSize: '0.75rem', color: kpi.trend.startsWith('+') || kpi.trend.startsWith('↑') ? 'var(--green-400)' : 'var(--amber-400)' }}>

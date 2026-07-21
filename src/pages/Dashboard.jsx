@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Cpu, FileText, AlertTriangle, ShieldCheck,
   Share2, MessageSquareText, TrendingUp, TrendingDown,
-  Activity, Zap, ChevronRight, Clock, FileStack, Wrench, BookOpen
+  Activity, Zap, ChevronRight, Clock, FileStack, Wrench, BookOpen, PlayCircle
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -12,6 +12,7 @@ import {
 import {
   DASHBOARD_KPIs, ACTIVITY_FEED, COVERAGE_DATA, TREND_DATA
 } from '../data/dashboardData'
+import WelcomeTour from '../components/WelcomeTour'
 
 const ICON_MAP = { Cpu, FileText, AlertTriangle, ShieldCheck, Share2, MessageSquareText, FileStack, Wrench, BookOpen, Activity }
 
@@ -111,6 +112,12 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const [showTour, setShowTour] = useState(() => !localStorage.getItem('nexus-tour-done'))
+
+  const handleTourClose = () => {
+    localStorage.setItem('nexus-tour-done', '1')
+    setShowTour(false)
+  }
 
   const quickActions = [
     { label: 'Upload Document', icon: FileStack, color: 'green', to: '/ingestion' },
@@ -121,6 +128,42 @@ export default function Dashboard() {
 
   return (
     <div>
+      {showTour && <WelcomeTour onClose={handleTourClose} />}
+
+      {/* AI Daily Briefing Banner */}
+      <div className="card" style={{
+        marginBottom: 'var(--spacing-lg)',
+        background: 'linear-gradient(135deg, rgba(14,165,233,0.08), rgba(139,92,246,0.06))',
+        border: '1px solid rgba(14,165,233,0.2)',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 300, height: '100%', background: 'radial-gradient(ellipse at right, rgba(14,165,233,0.06), transparent)', pointerEvents: 'none' }} />
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #0ea5e9, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 16px rgba(14,165,233,0.4)' }}>
+            <Zap size={20} color="white" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontWeight: 800, fontSize: '0.95rem', background: 'linear-gradient(135deg, #e8f4fd, #38bdf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>🤖 AI Daily Briefing — July 20, 2024</span>
+              <span className="badge badge-blue">Auto-generated</span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              <strong style={{ color: 'var(--red-400)' }}>🔴 Critical:</strong> C-301 compressor at 82% of trip threshold entering monsoon season — 87% failure probability within 14 days.
+              {' '}<strong style={{ color: 'var(--amber-400)' }}>⚠️ Action needed:</strong> OISD-118 firewater test overdue by 5 months; 3 gas detectors uncalibrated.
+              {' '}<strong style={{ color: 'var(--green-400)' }}>✅ Positive:</strong> Equipment availability at 96.4% (+0.8% MoM). Copilot handled 38 queries today — up 12%.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowTour(true)}>
+              <PlayCircle size={14} /> Take Tour
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={() => navigate('/copilot')}>
+              Ask Copilot <ChevronRight size={13} />
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="page-header flex-between">
         <div>
