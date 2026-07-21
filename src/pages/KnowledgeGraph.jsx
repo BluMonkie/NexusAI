@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { apiFetch } from '../services/apiClient'
+import { GRAPH_STATS } from '../data/knowledgeGraphData'
 import { Search, Filter, X, Info, FileText, Cpu, User, FileStack, ShieldCheck, AlertTriangle, Share2, ZoomIn, ZoomOut, Plus } from 'lucide-react'
 import * as d3 from 'd3'
 
@@ -190,7 +191,7 @@ export default function KnowledgeGraph() {
   }
 
   const connectedEdges = selectedNode
-    ? GRAPH_EDGES.filter(e => e.source === selectedNode.id || e.target === selectedNode.id)
+    ? edges.filter(e => (e.source_id || e.source) === selectedNode.id || (e.target_id || e.target) === selectedNode.id)
     : []
 
   return (

@@ -153,6 +153,8 @@ export default function DocumentIngestion() {
     }
   }
 
+  const pieData = ENTITY_TYPES.map(e => ({ name: e.type, value: e.count, color: e.color }))
+
   return (
     <div>
       <div className="page-header flex-between">
