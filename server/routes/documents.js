@@ -91,7 +91,7 @@ router.post('/upload', authenticateToken, requireRole('Plant Engineer', 'Plant A
     })
 
     // Automatic Entity & Edge Extraction for Knowledge Graph
-    const entityMatches = rawText.match(/(?:[A-Z]{1,4}-\d{2,4}[A-Z]?|[A-Z]{3}-\d{4}-\d{2})/g) || []
+    const entityMatches = (extractedText || '').match(/(?:[A-Z]{1,4}-\d{2,4}[A-Z]?|[A-Z]{3}-\d{4}-\d{2})/g) || []
     const uniqueEntities = Array.from(new Set(entityMatches))
 
     for (const entityId of uniqueEntities) {

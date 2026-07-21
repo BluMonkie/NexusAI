@@ -1,0 +1,40 @@
+Emergency Startup & Pressure Control Protocol for FCC High-Pressure Separator (V-204)
+
+Document ID: SOP-CL-409-REV2
+Facility: Area 200 - Hydrocracker & Catalytic Cracking Complex (Jamnagar Refinery Unit)
+Effective Date: July 15, 2024
+Compliance: OISD-STD-117, PESO Static Pressure Vessels Rules 2016, ISO 45001:2018
+
+Purpose:
+This SOP defines emergency startup, pressure control, Lockout/Tagout (LOTO), emergency depressurization, and Root Cause Analysis guidance for FCC High-Pressure Separator V-204.
+
+Equipment Specifications:
+- Primary Asset: V-204 High-Pressure Gas/Liquid Separator
+- Connected Pump: P-101A Crude Charge Pump A
+- MAWP: 52.0 bar
+- Normal Operating Pressure: 45.2 bar
+- Operating Temperature: 380°C
+- High Pressure Trip: 49.5 bar
+- PSV-204A Lift Setpoint: 51.0 bar
+
+Emergency Startup Procedure:
+1. Verify mechanical readiness, PTW, instrument calibration, PSV certification, and EDV functionality.
+2. Perform four-step nitrogen purge: (a) pressurize to 2–3 barg with 99.99% N2 for 10 min; (b) vent to flare until O2<2% and HC<10% LEL; (c) repeat purge cycle three times; (d) maintain 0.2–0.5 barg positive pressure.
+3. Start auxiliary systems, cooling water, lubrication, then Pump P-101A. Introduce feed gradually while maintaining pressure near 45.2 bar.
+4. Continuously monitor PT-204A/B, separator level, pump vibration, and seal leakage. Respond immediately above 48.5 bar.
+
+LOTO Procedure:
+- Stop Pump P-101A and isolate electrical supply.
+- Close Valve V-204-IN-01, apply lock and danger tag.
+- Close Valve V-204-OUT-02, apply lock and tag.
+- Depressurize, drain, vent, and verify zero energy before maintenance.
+
+Emergency Depressurization:
+Actuate EDV-204 for pressure above 49.5 bar, fire exposure, vessel damage, or major process upset. Confirm flare availability and depressurize in a controlled manner.
+
+Root Cause Analysis:
+Incident ID: INC-2024-88
+Event Date: May 12, 2024
+Failure Summary: Mechanical seal failure on Pump P-101A caused a secondary pressure spike in Separator V-204.
+Root Cause: Thermal stress cracking of silicon carbide seal faces caused by transient cooling water flow interruption due to CW-201 line throttling.
+CAPA: Replace seal assembly, install dual magnetic face bearing isolators, deploy continuous DP acoustic sensor monitoring, recalibrate cooling water controls, update startup checklist, and enhance predictive maintenance.
