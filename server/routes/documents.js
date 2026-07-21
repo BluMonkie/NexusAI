@@ -144,7 +144,7 @@ router.post('/upload', authenticateToken, requireRole('Plant Engineer', 'Plant A
 })
 
 // DELETE /api/documents/:id
-router.delete('/:id', authenticateToken, requireRole('Plant Administrator'), async (req, res) => {
+router.delete('/:id', authenticateToken, requireRole('Plant Engineer', 'Plant Administrator', 'Maintenance Technician'), async (req, res) => {
   const { id } = req.params
 
   const docIndex = db.data.documents.findIndex(d => d.id === id)

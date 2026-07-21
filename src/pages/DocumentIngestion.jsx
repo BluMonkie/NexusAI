@@ -371,20 +371,20 @@ export default function DocumentIngestion() {
             </div>
             <div className="grid grid-2 mb-lg" style={{ gap: 12 }}>
               {[
-                { label: 'Type', value: selectedDoc.type },
-                { label: 'Pages', value: selectedDoc.pages },
-                { label: 'File Size', value: selectedDoc.size },
-                { label: 'Entities', value: selectedDoc.entities },
+                { label: 'Type', value: selectedDoc.type || 'DOCUMENT' },
+                { label: 'Category', value: selectedDoc.category || 'General' },
+                { label: 'Uploaded', value: new Date(selectedDoc.uploaded_at || Date.now()).toLocaleDateString() },
+                { label: 'Status', value: selectedDoc.status || 'indexed' },
               ].map(({ label, value }) => (
                 <div key={label} className="card" style={{ padding: 12 }}>
                   <div className="section-label mb-sm">{label}</div>
-                  <div style={{ fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{value}</div>
+                  <div style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>{value}</div>
                 </div>
               ))}
             </div>
             <div className="section-label mb-sm">Tags</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
-              {selectedDoc.tags.map(t => <span key={t} className="tag">{t}</span>)}
+              {(selectedDoc.tags || [selectedDoc.category || 'Engineering', selectedDoc.type || 'Doc', 'RAG Indexed']).map(t => <span key={t} className="tag">{t}</span>)}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn-primary btn-sm" onClick={() => { setSelectedDoc(null); navigate('/knowledge-graph') }}>
