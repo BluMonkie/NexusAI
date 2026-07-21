@@ -98,6 +98,8 @@ export default function DocumentIngestion() {
     fetchDocuments()
   }, [])
 
+  const [uploadedDoc, setUploadedDoc] = useState(null)
+
   const processUpload = async (file) => {
     setProcessingDoc(file.name)
     setPipelineStep(0)
@@ -116,10 +118,11 @@ export default function DocumentIngestion() {
       formData.append('category', 'Engineering Drawings')
       formData.append('area', 'Global')
 
-      await apiFetch('/documents/upload', {
+      const res = await apiFetch('/documents/upload', {
         method: 'POST',
         body: formData,
       })
+      if (res.document) setUploadedDoc(res.document)
 
       clearInterval(interval)
       setPipelineStep(4)
@@ -257,7 +260,7 @@ export default function DocumentIngestion() {
                       <button className="btn btn-primary btn-sm" onClick={() => navigate('/knowledge-graph')}>
                         <Share2 size={13} /> View in Knowledge Graph
                       </button>
-                      <button className="btn btn-secondary btn-sm">
+                      <button className="btn btn-secondary btn-sm" onClick={() => setSelectedDoc(uploadedDoc || documents[0])}>
                         <Eye size={13} /> View Full Document
                       </button>
                     </div>
@@ -387,13 +390,21 @@ export default function DocumentIngestion() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
               {(selectedDoc.tags || [selectedDoc.category || 'Engineering', selectedDoc.type || 'Doc', 'RAG Indexed']).map(t => <span key={t} className="tag">{t}</span>)}
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button className="btn btn-primary btn-sm" onClick={() => { setSelectedDoc(null); navigate('/knowledge-graph') }}>
                 <Share2 size={13} /> View in Knowledge Graph
               </button>
               <button className="btn btn-secondary btn-sm" onClick={() => { setSelectedDoc(null); navigate('/copilot') }}>
                 <Cpu size={13} /> Ask About This Doc
               </button>
+              {selectedDoc.file_path && (
+                <button className="btn btn-secondary btn-sm" onClick={() => {
+                  const filename = selectedDoc.file_path.split(/[/\\]/).pop()
+                  window.open(`http://localhost:3001/uploads/${filename}`, '_blank')
+                }}>
+                  <Eye size={13} /> Open File
+                </button>
+              )}
             </div>
           </div>
         </div>
