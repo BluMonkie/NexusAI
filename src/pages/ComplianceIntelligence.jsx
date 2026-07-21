@@ -42,51 +42,63 @@ function ComplianceRing({ score }) {
 const TABS = ['Overview', 'Requirements', 'Gaps', 'Audit Calendar', 'Quality']
 
 export default function ComplianceIntelligence() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('Overview')
   const [selectedReq, setSelectedReq] = useState(null)
-  const [rules, setRules] = useState([])
-  const [score, setScore] = useState(88)
+  const [showAuditModal, setShowAuditModal] = useState(false)
+  const [requirements, setRequirements] = useState([])
+  const [gaps, setGaps] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function loadCompliance() {
+    async function loadData() {
       try {
-        const res = await apiFetch('/compliance/requirements')
-        setRules(res.rules)
-        if (res.complianceScore) setScore(res.complianceScore)
+        const data = await apiFetch('/compliance/requirements')
+        setRequirements(data.requirements || [])
+        setGaps(data.gaps || [])
       } catch (err) {
-        console.warn('Failed to fetch compliance rules:', err.message)
+        console.warn('Failed to fetch compliance requirements:', err.message)
+      } finally {
+        setLoading(false)
       }
     }
-    loadCompliance()
+    loadData()
   }, [])
-  const navigate = useNavigate()
+
+  const handleGenerateAuditPackage = () => {
+    const report = {
+      title: "NEXUS IQ — Compliance Audit Package",
+      timestamp: new Date().toISOString(),
+      overallScore: "87.4%",
+      status: "Audit Ready with Minor Warnings",
+      standards: ["OISD-STD-117", "PESO Static Pressure Rules", "ISO 45001:2018", "OSHA 1910.147"],
+      totalRequirements: requirements.length,
+      gapsIdentified: gaps.length
+    }
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Compliance_Audit_Package_${Date.now()}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    setShowAuditModal(true)
+  }
 
   const radarData = COMPLIANCE_SCORE.byRegulation.map(r => ({ subject: r.reg, score: r.score }))
 
   return (
     <div>
+      {/* Header */}
       <div className="page-header flex-between">
         <div>
           <h1>Compliance Intelligence</h1>
           <p>Regulatory gap detection, audit readiness, and quality deviation monitoring</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-secondary btn-sm" onClick={() => {
-            const report = {
-              title: "NEXUS IQ — Compliance Audit Package",
-              timestamp: new Date().toISOString(),
-              overallScore: "87.4%",
-              status: "Audit Ready with Minor Warnings",
-              standards: ["OISD-STD-117", "PESO Static Pressure Rules", "ISO 45001:2018", "OSHA 1910.147"],
-              requirementsCount: requirements.length
-            }
-            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = `Compliance_Audit_Package_${Date.now()}.json`
-            a.click()
-          }}>
+          <button className="btn btn-secondary btn-sm" onClick={handleGenerateAuditPackage}>
             <Download size={14} /> Generate Audit Package
           </button>
           <button className="btn btn-primary btn-sm" onClick={() => navigate('/copilot')}>
@@ -357,6 +369,41 @@ export default function ComplianceIntelligence() {
             {selectedReq.remediation && (
               <div className="alert alert-info">{selectedReq.remediation}</div>
             )}
+          </div>
+        </div>
+      )}
+      {/* Audit Package Success Modal */}
+      {showAuditModal && (
+        <div className="modal-overlay" onClick={() => setShowAuditModal(false)}>
+          <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ padding: 28 }}>
+            <div className="flex-between mb-md">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <CheckCircle size={24} color="var(--green-400)" />
+                <h3 style={{ margin: 0 }}>Compliance Audit Package Exported</h3>
+              </div>
+              <button className="btn btn-ghost" onClick={() => setShowAuditModal(false)}><X size={18} /></button>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: 20 }}>
+              The comprehensive regulatory compliance audit package has been generated and saved to your downloads folder as a JSON package.
+            </p>
+            <div className="grid grid-2 mb-lg" style={{ gap: 10 }}>
+              {[
+                { label: 'Overall Readiness', value: '87.4% (Audit Ready)' },
+                { label: 'Standards Covered', value: 'OISD, PESO, ISO, OSHA' },
+                { label: 'Total Requirements', value: '14 Standards' },
+                { label: 'Export Format', value: 'JSON / PDF Ready' },
+              ].map(({ label, value }) => (
+                <div key={label} className="card" style={{ padding: 12 }}>
+                  <div className="section-label mb-sm">{label}</div>
+                  <div style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>{value}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button className="btn btn-primary btn-sm" onClick={() => setShowAuditModal(false)}>
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}
