@@ -5,7 +5,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { db } from '../db/database.js'
 import { authenticateToken, requireRole } from '../middleware/authMiddleware.js'
-import { parseDocument, chunkText } from '../services/documentParser.js'
+import { parseDocument, chunkText, extractIndustrialEntities } from '../services/documentParser.js'
 import { generateEmbedding } from '../services/vectorStore.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -91,40 +91,25 @@ router.post('/upload', authenticateToken, requireRole('Plant Engineer', 'Plant A
     })
 
     // Automatic Entity & Edge Extraction for Knowledge Graph
-    const entityMatches = (extractedText || '').match(/(?:[A-Z]{1,4}-\d{2,4}[A-Z]?|[A-Z]{3}-\d{4}-\d{2})/g) || []
-    const uniqueEntities = Array.from(new Set(entityMatches))
+    const { extractedNodes } = extractIndustrialEntities(extractedText, file.originalname, area)
 
-    for (const entityId of uniqueEntities) {
-      if (entityId === docId) continue
+    for (const node of extractedNodes) {
+      if (node.id === docId) continue
 
-      // Determine entity type
-      let entityType = 'equipment'
-      if (entityId.startsWith('INC-')) entityType = 'incident'
-      else if (entityId.startsWith('SOP-')) entityType = 'document'
-      else if (entityId.startsWith('OISD-') || entityId.startsWith('ISO-')) entityType = 'compliance'
-
-      // Check if node exists
-      let nodeExists = db.data.graph_nodes.some(n => n.id === entityId)
-      if (!nodeExists) {
-        db.data.graph_nodes.push({
-          id: entityId,
-          label: entityId,
-          type: entityType,
-          area: area || 'Area 200',
-          status: 'active',
-          criticality: entityType === 'incident' ? 'high' : 'medium',
-          properties: { source_doc: file.originalname }
-        })
+      // Add node if missing
+      const existingNode = db.data.graph_nodes.find(n => n.id === node.id)
+      if (!existingNode) {
+        db.data.graph_nodes.push(node)
       }
 
-      // Add connecting edge
-      const edgeId = `edge_${docId}_${entityId}`
+      // Add connecting edge from document to entity
+      const edgeId = `edge_${docId}_${node.id}`
       if (!db.data.graph_edges.some(e => e.id === edgeId)) {
         db.data.graph_edges.push({
           id: edgeId,
           source: docId,
-          target: entityId,
-          label: 'REFERENCES',
+          target: node.id,
+          label: node.type === 'regulation' ? 'GOVERNED_BY' : node.type === 'incident' ? 'REPORTS' : 'REFERENCES',
           type: 'references'
         })
       }

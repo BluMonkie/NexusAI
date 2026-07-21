@@ -1,0 +1,39 @@
+Emergency Shutdown & Temperature Stabilization Protocol for Diesel Hydrotreater Reactor Feed Surge Drum (D-317)
+
+Document ID: SOP-DH-527-REV1
+Facility: Area 300 – Diesel Hydrotreater & Hydrogen Recovery Unit (Western Process Complex)
+Effective Date: September 2, 2024
+Compliance: OISD-STD-105, API 521, ISO 45001:2018, PESO Static Pressure Vessels Rules 2016
+
+Purpose:
+Standard operating procedure covering emergency shutdown, stabilization, LOTO, emergency blowdown and RCA for Reactor Feed Surge Drum D-317.
+
+Equipment Specifications:
+- Primary Asset: D-317 – Reactor Feed Surge Drum
+- Associated Pump: P-317B – Reactor Feed Pump B
+- Normal Pressure: 36.8 bar
+- MAWP: 42.5 bar
+- Temperature: 345°C
+- High Temp Alarm: 355°C
+- High Pressure Trip: 40.8 bar
+- PSV Setpoint: 41.8 bar
+- Emergency Blowdown Valve: BDV-317
+
+Emergency Shutdown Procedure:
+1. Notify CCR, reduce feed, stop Pump P-317B and isolate FCV-317.
+2. Purge with nitrogen at 1.5–2.5 barg for 5 minutes, vent to flare until oxygen is below 2% and hydrocarbons below 10% LEL.
+3. Repeat purge twice and maintain a 0.3 barg nitrogen blanket.
+4. Monitor pressure, shell temperature and hydrogen flow while limiting cooling to 30°C/hour.
+
+LOTO Procedure:
+- Lock electrical isolator for Pump P-317B.
+- Close D-317-IN-05 and apply lock/tag.
+- Close D-317-OUT-06 and apply lock/tag.
+- Drain, vent and verify zero pressure before maintenance.
+
+Root Cause Analysis:
+Incident ID: INC-2024-143
+Event Date: August 19, 2024
+Failure Summary: Excessive pump vibration resulted in an automatic trip and transient pressure rise within D-317.
+Root Cause: Partial blockage of lubricating oil filter LO-317 reduced bearing lubrication, causing overheating and vibration.
+CAPA: Replace bearings and filter, flush lubrication circuit, install online oil particle counter, implement DCS trend analytics, shorten oil analysis intervals and enhance predictive maintenance.
