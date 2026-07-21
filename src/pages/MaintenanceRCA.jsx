@@ -1,12 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Wrench, AlertTriangle, TrendingDown, Clock, X,
   CheckCircle, Loader, ChevronRight, Activity,
-  BarChart2, Calendar, FileText, Zap, ArrowUp, ArrowDown
+  BarChart2, Calendar, FileText, Zap, ArrowUp, ArrowDown, Plus
 } from 'lucide-react'
+import { apiFetch } from '../services/apiClient'
 import {
-  EQUIPMENT_HEALTH, WORK_ORDERS, RCA_CASES, PREDICTIVE_ALERTS,
+  EQUIPMENT_HEALTH, RCA_CASES, PREDICTIVE_ALERTS,
   MAINTENANCE_KPIs, FAILURE_TIMELINE
 } from '../data/maintenanceData'
 import {
@@ -120,10 +121,24 @@ const TABS = ['Overview', 'Equipment Health', 'Work Orders', 'RCA Cases']
 export default function MaintenanceRCA() {
   const [activeTab, setActiveTab] = useState('Overview')
   const [selectedRCA, setSelectedRCA] = useState(null)
+  const [workOrders, setWorkOrders] = useState([])
   const navigate = useNavigate()
 
+  const fetchWorkOrders = async () => {
+    try {
+      const res = await apiFetch('/maintenance/work-orders')
+      setWorkOrders(res.workOrders)
+    } catch (err) {
+      console.warn('Failed to load work orders:', err.message)
+    }
+  }
+
+  useEffect(() => {
+    fetchWorkOrders()
+  }, [])
+
   const criticalEquipment = EQUIPMENT_HEALTH.filter(e => e.criticalFlag)
-  const openWOs = WORK_ORDERS.filter(w => w.status !== 'closed')
+  const openWOs = workOrders.filter(w => w.status !== 'closed')
 
   return (
     <div>

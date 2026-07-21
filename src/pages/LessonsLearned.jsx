@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   BookOpen, AlertTriangle, TrendingUp, Search,
   Filter, X, ChevronRight, Eye, Zap, ArrowRight,
-  AlertOctagon, Clock
+  AlertOctagon, Clock, Plus
 } from 'lucide-react'
+import { apiFetch } from '../services/apiClient'
 import {
   INCIDENTS, PATTERN_CLUSTERS, PROACTIVE_WARNINGS, INCIDENT_TRENDS
 } from '../data/lessonsLearnedData'

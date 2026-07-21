@@ -8,6 +8,7 @@ import Copilot from './pages/Copilot'
 import MaintenanceRCA from './pages/MaintenanceRCA'
 import ComplianceIntelligence from './pages/ComplianceIntelligence'
 import LessonsLearned from './pages/LessonsLearned'
+import { AuthProvider } from './context/AuthContext'
 import { useState } from 'react'
 import './index.css'
 
@@ -15,7 +16,8 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
-    <BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
       <div className="app-layout">
         <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
         <div className={`main-content${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
@@ -35,5 +37,6 @@ export default function App() {
         </div>
       </div>
     </BrowserRouter>
+  </AuthProvider>
   )
 }

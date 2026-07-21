@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { GRAPH_NODES, GRAPH_EDGES, GRAPH_STATS } from '../data/knowledgeGraphData'
-import { Search, Filter, X, Info, FileText, Cpu, User, FileStack, ShieldCheck, AlertTriangle, Share2, ZoomIn, ZoomOut } from 'lucide-react'
+import { apiFetch } from '../services/apiClient'
+import { Search, Filter, X, Info, FileText, Cpu, User, FileStack, ShieldCheck, AlertTriangle, Share2, ZoomIn, ZoomOut, Plus } from 'lucide-react'
 import * as d3 from 'd3'
 
 const NODE_COLORS = {
@@ -10,32 +10,51 @@ const NODE_COLORS = {
   procedure: '#f97316',
   regulation: '#ef4444',
   incident: '#fbbf24',
+  work_order: '#ec4899',
 }
 
 const NODE_ICONS = {
   equipment: '⚙️', document: '📄', person: '👤',
-  procedure: '📋', regulation: '⚖️', incident: '🚨',
+  procedure: '📋', regulation: '⚖️', incident: '🚨', work_order: '🔧',
 }
 
 const TYPE_LABELS = {
   equipment: 'Equipment', document: 'Document', person: 'Personnel',
-  procedure: 'Procedure', regulation: 'Regulation', incident: 'Incident',
+  procedure: 'Procedure', regulation: 'Regulation', incident: 'Incident', work_order: 'Work Order',
 }
 
 export default function KnowledgeGraph() {
   const svgRef = useRef(null)
+  const [nodes, setNodes] = useState([])
+  const [edges, setEdges] = useState([])
+  const [stats, setStats] = useState({ totalNodes: 0, totalEdges: 0 })
   const [selectedNode, setSelectedNode] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeFilters, setActiveFilters] = useState(new Set(['equipment', 'document', 'person', 'procedure', 'regulation', 'incident']))
+  const [activeFilters, setActiveFilters] = useState(new Set(['equipment', 'document', 'person', 'procedure', 'regulation', 'incident', 'work_order']))
   const [graphReady, setGraphReady] = useState(false)
   const simulationRef = useRef(null)
 
-  const filteredNodes = GRAPH_NODES.filter(n =>
+  const fetchGraph = async () => {
+    try {
+      const res = await apiFetch('/graph')
+      setNodes(res.nodes)
+      setEdges(res.edges)
+      setStats(res.stats)
+    } catch (err) {
+      console.warn('Failed to load graph:', err.message)
+    }
+  }
+
+  useEffect(() => {
+    fetchGraph()
+  }, [])
+
+  const filteredNodes = nodes.filter(n =>
     activeFilters.has(n.type) &&
     (searchQuery === '' || n.label.toLowerCase().includes(searchQuery.toLowerCase()))
   )
   const filteredNodeIds = new Set(filteredNodes.map(n => n.id))
-  const filteredEdges = GRAPH_EDGES.filter(e => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target))
+  const filteredEdges = edges.filter(e => filteredNodeIds.has(e.source_id || e.source) && filteredNodeIds.has(e.target_id || e.target))
 
   useEffect(() => {
     if (!svgRef.current) return
@@ -76,7 +95,7 @@ export default function KnowledgeGraph() {
     const nodes = filteredNodes.map(n => ({ ...n }))
     const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]))
     const links = filteredEdges
-      .map(e => ({ ...e, source: nodeMap[e.source], target: nodeMap[e.target] }))
+      .map(e => ({ ...e, source: nodeMap[e.source_id || e.source], target: nodeMap[e.target_id || e.target] }))
       .filter(e => e.source && e.target)
 
     const simulation = d3.forceSimulation(nodes)

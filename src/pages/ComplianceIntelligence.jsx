@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ShieldCheck, AlertTriangle, CheckCircle, Clock, X,
   Calendar, FileText, Download, Zap, ChevronRight, AlertOctagon
 } from 'lucide-react'
+import { apiFetch } from '../services/apiClient'
 import {
-  REGULATIONS, COMPLIANCE_REQUIREMENTS, COMPLIANCE_GAPS,
+  REGULATIONS, COMPLIANCE_REQUIREMENTS,
   AUDIT_CALENDAR, COMPLIANCE_SCORE, QUALITY_DEVIATIONS
 } from '../data/complianceData'
 import {
@@ -43,6 +44,21 @@ const TABS = ['Overview', 'Requirements', 'Gaps', 'Audit Calendar', 'Quality']
 export default function ComplianceIntelligence() {
   const [activeTab, setActiveTab] = useState('Overview')
   const [selectedReq, setSelectedReq] = useState(null)
+  const [rules, setRules] = useState([])
+  const [score, setScore] = useState(88)
+
+  useEffect(() => {
+    async function loadCompliance() {
+      try {
+        const res = await apiFetch('/compliance/requirements')
+        setRules(res.rules)
+        if (res.complianceScore) setScore(res.complianceScore)
+      } catch (err) {
+        console.warn('Failed to fetch compliance rules:', err.message)
+      }
+    }
+    loadCompliance()
+  }, [])
   const navigate = useNavigate()
 
   const radarData = COMPLIANCE_SCORE.byRegulation.map(r => ({ subject: r.reg, score: r.score }))

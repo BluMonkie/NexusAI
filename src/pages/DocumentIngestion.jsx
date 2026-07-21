@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react'
 import {
   Upload, FileText, CheckCircle, Loader, Share2,
   Cpu, Layers, FileSearch, Tag, Calendar, User,
-  FileStack, BarChart2, ChevronRight, X, Eye
+  FileStack, BarChart2, ChevronRight, X, Eye, Trash2
 } from 'lucide-react'
+import { apiFetch } from '../services/apiClient'
 import {
-  DOCUMENT_TYPES, RECENT_DOCUMENTS, INGESTION_STATS, ENTITY_TYPES
+  DOCUMENT_TYPES, INGESTION_STATS, ENTITY_TYPES
 } from '../data/dashboardData'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -77,40 +78,80 @@ export default function DocumentIngestion() {
   const [processingDoc, setProcessingDoc] = useState(null)
   const [showEntities, setShowEntities] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState(null)
+  const [documents, setDocuments] = useState([])
+  const [stats, setStats] = useState({ totalDocuments: 0, indexedChunks: 0, activeEntities: 0 })
+  const [uploadError, setUploadError] = useState(null)
   const fileInputRef = useRef(null)
-  const navigate = useNavigate()
 
-  const simulateProcessing = (filename) => {
-    setProcessingDoc(filename)
+  const fetchDocuments = async () => {
+    try {
+      const res = await apiFetch('/documents')
+      setDocuments(res.documents)
+      setStats(res.stats)
+    } catch (err) {
+      console.warn('Failed to load documents:', err.message)
+    }
+  }
+
+  useEffect(() => {
+    fetchDocuments()
+  }, [])
+
+  const processUpload = async (file) => {
+    setProcessingDoc(file.name)
     setPipelineStep(0)
     setShowEntities(false)
+    setUploadError(null)
+
     let step = 0
-    const advance = () => {
+    const interval = setInterval(() => {
       step++
-      if (step <= 4) {
-        setPipelineStep(step)
-        setTimeout(advance, 1200 + Math.random() * 600)
-      } else {
-        setPipelineStep(5) // all done
-        setShowEntities(true)
-      }
+      if (step <= 3) setPipelineStep(step)
+    }, 600)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('category', 'Engineering Drawings')
+      formData.append('area', 'Global')
+
+      await apiFetch('/documents/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      clearInterval(interval)
+      setPipelineStep(4)
+      setTimeout(() => setPipelineStep(5), 500)
+      setShowEntities(true)
+      fetchDocuments()
+    } catch (err) {
+      clearInterval(interval)
+      setUploadError(err.message)
+      setPipelineStep(-1)
     }
-    setTimeout(advance, 1000)
   }
 
   const handleDrop = (e) => {
     e.preventDefault()
     setDragOver(false)
     const file = e.dataTransfer.files[0]
-    if (file) simulateProcessing(file.name)
+    if (file) processUpload(file)
   }
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0]
-    if (file) simulateProcessing(file.name)
+    if (file) processUpload(file)
   }
 
-  const pieData = ENTITY_TYPES.map(e => ({ name: e.type, value: e.count, color: e.color }))
+  const handleDelete = async (docId) => {
+    try {
+      await apiFetch(`/documents/${docId}`, { method: 'DELETE' })
+      fetchDocuments()
+    } catch (err) {
+      alert(`Delete failed: ${err.message}`)
+    }
+  }
 
   return (
     <div>
@@ -226,35 +267,44 @@ export default function DocumentIngestion() {
           {/* Recent Documents */}
           <div className="card">
             <div className="flex-between mb-md">
-              <h4 style={{ margin: 0 }}>Recently Ingested</h4>
-              <span className="badge badge-green">+14 today</span>
+              <h4 style={{ margin: 0 }}>Indexed Knowledge Base Documents</h4>
+              <span className="badge badge-green">{documents.length} live docs</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {RECENT_DOCUMENTS.map(doc => (
-                <div
-                  key={doc.id}
-                  onClick={() => setSelectedDoc(doc)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 12px', borderRadius: 'var(--radius-md)',
-                    cursor: 'pointer', transition: 'background var(--transition-fast)',
-                    border: '1px solid transparent',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}
-                >
-                  <span style={{ fontSize: '1.4rem' }}>{DOC_TYPE_ICONS[doc.type] || '📄'}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                      {doc.type} · {doc.pages} page{doc.pages > 1 ? 's' : ''} · {doc.entities} entities
+              {documents.length === 0 ? (
+                <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                  No uploaded documents yet. Drag & drop a file above to index it into RAG!
+                </div>
+              ) : (
+                documents.map(doc => (
+                  <div
+                    key={doc.id}
+                    onClick={() => setSelectedDoc(doc)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '10px 12px', borderRadius: 'var(--radius-md)',
+                      cursor: 'pointer', transition: 'background var(--transition-fast)',
+                      border: '1px solid transparent',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}
+                  >
+                    <span style={{ fontSize: '1.4rem' }}>{DOC_TYPE_ICONS[doc.category] || '📄'}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                        {doc.type} · {doc.category || 'General'} · Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="badge badge-green"><CheckCircle size={9} /> Indexed</span>
+                      <button className="btn btn-ghost btn-sm" onClick={(e) => { e.stopPropagation(); handleDelete(doc.id) }} title="Delete Document">
+                        <Trash2 size={13} color="var(--red-400)" />
+                      </button>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <span className="badge badge-green"><CheckCircle size={9} /> Indexed</span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

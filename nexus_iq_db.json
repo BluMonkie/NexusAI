@@ -1,0 +1,213 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "email": "engineer@nexusiq.io",
+      "password": "$2b$10$d2XldKGE0nE929awaqEvwuXdpV/26dewZBYuF1dPUaSSMtOm4YXsi",
+      "name": "Rajesh Kumar",
+      "role": "Plant Engineer"
+    },
+    {
+      "id": "u2",
+      "email": "technician@nexusiq.io",
+      "password": "$2b$10$d2XldKGE0nE929awaqEvwuXdpV/26dewZBYuF1dPUaSSMtOm4YXsi",
+      "name": "Vikram Singh",
+      "role": "Maintenance Technician"
+    },
+    {
+      "id": "u3",
+      "email": "ehs@nexusiq.io",
+      "password": "$2b$10$d2XldKGE0nE929awaqEvwuXdpV/26dewZBYuF1dPUaSSMtOm4YXsi",
+      "name": "Ananya Sharma",
+      "role": "EHS Specialist"
+    },
+    {
+      "id": "u4",
+      "email": "admin@nexusiq.io",
+      "password": "$2b$10$d2XldKGE0nE929awaqEvwuXdpV/26dewZBYuF1dPUaSSMtOm4YXsi",
+      "name": "Admin User",
+      "role": "Plant Administrator"
+    }
+  ],
+  "documents": [],
+  "document_chunks": [],
+  "graph_nodes": [
+    {
+      "id": "P-101A",
+      "label": "Crude Charge Pump A",
+      "type": "equipment",
+      "area": "Area 100",
+      "status": "healthy",
+      "criticality": "critical",
+      "properties": {
+        "flow": "450 m3/h",
+        "pressure": "18.2 bar"
+      }
+    },
+    {
+      "id": "C-301",
+      "label": "Fluid Catalytic Cracker",
+      "type": "equipment",
+      "area": "Area 300",
+      "status": "warning",
+      "criticality": "critical",
+      "properties": {
+        "temp": "520 C",
+        "vibration": "7.8 mm/s"
+      }
+    },
+    {
+      "id": "V-204",
+      "label": "High-Pressure Separator",
+      "type": "equipment",
+      "area": "Area 200",
+      "status": "healthy",
+      "criticality": "high",
+      "properties": {
+        "pressure": "45 bar"
+      }
+    },
+    {
+      "id": "DOC-882",
+      "label": "SOP-CL-301: FCC Startup Procedure",
+      "type": "document",
+      "area": "Area 300",
+      "status": "active",
+      "criticality": "high",
+      "properties": {
+        "version": "v3.2",
+        "author": "EHS"
+      }
+    },
+    {
+      "id": "SOP-EHS-04",
+      "label": "Lockout / Tagout Safety Protocol",
+      "type": "procedure",
+      "area": "Global",
+      "status": "active",
+      "criticality": "critical",
+      "properties": {
+        "standard": "OSHA 1910.147"
+      }
+    },
+    {
+      "id": "WO-4401",
+      "label": "Replace Mechanical Seal P-101A",
+      "type": "work_order",
+      "area": "Area 100",
+      "status": "completed",
+      "criticality": "medium",
+      "properties": {
+        "date": "2024-06-12"
+      }
+    }
+  ],
+  "graph_edges": [
+    {
+      "id": "e1",
+      "source_id": "P-101A",
+      "target_id": "WO-4401",
+      "label": "MAINTAINED_BY",
+      "strength": 1
+    },
+    {
+      "id": "e2",
+      "source_id": "C-301",
+      "target_id": "DOC-882",
+      "label": "OPERATED_BY",
+      "strength": 0.9
+    },
+    {
+      "id": "e3",
+      "source_id": "DOC-882",
+      "target_id": "SOP-EHS-04",
+      "label": "GOVERNS",
+      "strength": 0.8
+    },
+    {
+      "id": "e4",
+      "source_id": "P-101A",
+      "target_id": "V-204",
+      "label": "FEEDS_INTO",
+      "strength": 0.7
+    }
+  ],
+  "work_orders": [
+    {
+      "id": "WO-9012",
+      "title": "Vibration Analysis & Bearing Regreasing",
+      "equipment": "C-301 FCC Reactor",
+      "priority": "High",
+      "status": "In Progress",
+      "assigned_to": "Vikram Singh",
+      "desc": "Elevated drive-end bearing vibration (7.8 mm/s). Requires diagnostic check.",
+      "created_at": "2026-07-21T16:22:04.156Z"
+    },
+    {
+      "id": "WO-9013",
+      "title": "Replace Mechanical Seal Impeller A",
+      "equipment": "P-101A Charge Pump",
+      "priority": "Medium",
+      "status": "Pending Approval",
+      "assigned_to": "Unassigned",
+      "desc": "Preventative maintenance window following 4,000 runtime hours.",
+      "created_at": "2026-07-21T16:22:04.158Z"
+    },
+    {
+      "id": "WO-9014",
+      "title": "Pressure Relief Valve Calibration",
+      "equipment": "V-204 H2 Separator",
+      "priority": "Critical",
+      "status": "Open",
+      "assigned_to": "Rajesh Kumar",
+      "desc": "Annual statutory compliance check required before Q3 audit.",
+      "created_at": "2026-07-21T16:22:04.158Z"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "INC-2024-04",
+      "title": "FCC Regenerator Catalyst Carryover",
+      "equipment": "C-301",
+      "severity": "High",
+      "date": "2024-05-14",
+      "root_cause": "Cyclone dipleg pluggage due to thermal shock.",
+      "mitigation": "Installed continuous acoustic DP sensor monitoring on diplegs."
+    },
+    {
+      "id": "INC-2023-11",
+      "title": "Boiler Feed Pump Mechanical Failure",
+      "equipment": "P-101A",
+      "severity": "Critical",
+      "date": "2023-11-20",
+      "root_cause": "Lube oil contamination with cooling water.",
+      "mitigation": "Upgraded lip seals to magnetic face bearing isolators."
+    }
+  ],
+  "compliance_rules": [
+    {
+      "id": "CR-101",
+      "standard": "OISD-STD-117",
+      "title": "Fire Protection Systems for Refineries",
+      "desc": "Mandatory 100% deluge coverage on hydrocarbon charge pumps.",
+      "status": "compliant",
+      "severity": "Low"
+    },
+    {
+      "id": "CR-102",
+      "standard": "PESO Static Pressure Regulations",
+      "title": "Pressure Vessel Recertification",
+      "desc": "V-204 hydro-test due within 60 days.",
+      "status": "non-compliant",
+      "severity": "High"
+    },
+    {
+      "id": "CR-103",
+      "standard": "ISO 45001:2018",
+      "title": "Management of Change (MOC) Audit",
+      "desc": "MOC #402 missing final risk assessment signoff.",
+      "status": "warning",
+      "severity": "Medium"
+    }
+  ]
+}

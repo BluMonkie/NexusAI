@@ -102,57 +102,30 @@ async function callGemini(systemPrompt, conversationHistory, userMessage) {
   return data.candidates[0].content.parts[0].text
 }
 
+import { apiFetch } from './apiClient'
+
 // ── Main query function ──────────────────────────────────────
 export async function queryAI(userMessage, conversationHistory = []) {
-  const delay = ms => new Promise(r => setTimeout(r, ms))
-
-  if (AI_CONFIG.mode === 'simulated') {
-    // Simulate network latency
-    await delay(1200 + Math.random() * 800)
-    const resp = findSimulatedResponse(userMessage)
-    return {
-      answer: resp.answer,
-      sources: resp.sources,
-      confidence: resp.confidence,
-      relatedQuestions: resp.relatedQuestions,
-      entities: resp.entities || [],
-    }
-  }
-
-  const systemPrompt = `You are NEXUS IQ, an AI assistant for industrial knowledge management at a large Indian refinery/petrochemical plant. 
-You have access to engineering drawings, maintenance work orders, safety procedures, inspection reports, and regulatory documents.
-Answer questions with technical precision based ONLY on the provided context.
-If the answer is not in the context, say "I don't have enough information to answer this based on the current plant data."
-Give confidence scores (0-100%) for your answers based on the specificity of the match.
-Format: Answer clearly, then list "Sources:" as bullet points with document names or data sections.
-
-${getPlantContext()}`
-
   try {
-    let rawAnswer = ''
-
-    if (AI_CONFIG.mode === 'openai') {
-      const messages = [
-        { role: 'system', content: systemPrompt },
-        ...conversationHistory.slice(-6),
-        { role: 'user', content: userMessage },
-      ]
-      rawAnswer = await callOpenAI(messages)
-    } else if (AI_CONFIG.mode === 'gemini') {
-      rawAnswer = await callGemini(systemPrompt, conversationHistory.slice(-6), userMessage)
-    }
+    const response = await apiFetch('/copilot/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: userMessage,
+        history: conversationHistory.slice(-6),
+      }),
+    })
 
     return {
-      answer: rawAnswer,
-      sources: [{ doc: 'Live AI RAG Pipeline', confidence: 95, page: 'Context Injection' }],
-      confidence: 95,
+      answer: response.answer,
+      sources: response.sources || [{ doc: 'Live RAG Backend', confidence: 95 }],
+      confidence: response.confidence || 95,
       relatedQuestions: [],
       entities: [],
     }
   } catch (err) {
-    console.error('AI API Error:', err)
+    console.error('Backend RAG API Error:', err)
     return {
-      answer: `API Connection Error: ${err.message}\n\nPlease check that your VITE_GEMINI_API_KEY in the .env file is correct. It should be an AI Studio key starting with "AIza".`,
+      answer: `Backend RAG API Error: ${err.message}. Ensure Express backend is running on http://localhost:3001 and your JWT token is valid.`,
       sources: [],
       confidence: 0,
       relatedQuestions: [],
