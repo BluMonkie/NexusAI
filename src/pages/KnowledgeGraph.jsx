@@ -293,20 +293,23 @@ export default function KnowledgeGraph() {
 
             {/* Type-specific attributes */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-              {Object.entries(selectedNode)
-                .filter(([k]) => !['id', 'label', 'type', 'x', 'y', 'vx', 'vy', 'fx', 'fy', 'index'].includes(k))
-                .map(([k, v]) => (
-                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{k.replace(/_/g, ' ')}</span>
-                    <span style={{
-                      fontSize: '0.8rem', fontWeight: 600,
-                      color: k === 'health' ? (v > 80 ? 'var(--green-400)' : v > 60 ? 'var(--amber-400)' : 'var(--red-400)') : 'var(--text-primary)',
-                      fontFamily: typeof v === 'number' ? 'var(--font-mono)' : 'inherit',
-                    }}>
-                      {k === 'health' ? `${v}%` : String(v)}
-                    </span>
-                  </div>
-                ))
+              {Object.entries({ ...(selectedNode.properties || {}), status: selectedNode.status, area: selectedNode.area, criticality: selectedNode.criticality })
+                .filter(([k, v]) => v !== undefined && !['id', 'label', 'type', 'x', 'y', 'vx', 'vy', 'fx', 'fy', 'index', 'properties'].includes(k))
+                .map(([k, v]) => {
+                  const valStr = typeof v === 'object' ? JSON.stringify(v) : String(v)
+                  return (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{k.replace(/_/g, ' ')}</span>
+                      <span style={{
+                        fontSize: '0.8rem', fontWeight: 600,
+                        color: k === 'criticality' ? (v === 'critical' || v === 'high' ? 'var(--red-400)' : 'var(--green-400)') : 'var(--text-primary)',
+                        fontFamily: typeof v === 'number' ? 'var(--font-mono)' : 'inherit',
+                      }}>
+                        {valStr}
+                      </span>
+                    </div>
+                  )
+                })
               }
             </div>
 
@@ -314,9 +317,11 @@ export default function KnowledgeGraph() {
             <div className="section-label mb-sm">Connections ({connectedEdges.length})</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {connectedEdges.slice(0, 8).map((e, i) => {
-                const isSource = e.source === selectedNode.id
-                const other = isSource ? e.target : e.source
-                const otherNode = GRAPH_NODES.find(n => n.id === other)
+                const sourceId = typeof e.source === 'object' ? e.source.id : e.source
+                const targetId = typeof e.target === 'object' ? e.target.id : e.target
+                const isSource = sourceId === selectedNode.id
+                const otherId = isSource ? targetId : sourceId
+                const otherNode = nodes.find(n => n.id === otherId) || { id: otherId, label: otherId, type: 'equipment' }
                 return (
                   <div key={i} onClick={() => setSelectedNode(otherNode)}
                     style={{
@@ -324,14 +329,14 @@ export default function KnowledgeGraph() {
                       background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
                       fontSize: '0.78rem', transition: 'all 0.15s ease',
                     }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--border-active)'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
+                    onMouseEnter={ev => ev.currentTarget.style.borderColor = 'var(--border-active)'}
+                    onMouseLeave={ev => ev.currentTarget.style.borderColor = 'var(--border-subtle)'}
                   >
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', marginBottom: 2 }}>
                       {isSource ? '→' : '←'} <span style={{ color: 'var(--blue-400)', fontFamily: 'var(--font-mono)' }}>{e.label}</span>
                     </div>
                     <div style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
-                      {otherNode?.label || other}
+                      {otherNode?.label || otherId}
                     </div>
                   </div>
                 )
