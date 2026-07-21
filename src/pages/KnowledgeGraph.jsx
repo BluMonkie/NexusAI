@@ -179,7 +179,7 @@ export default function KnowledgeGraph() {
     svg.on('click', () => setSelectedNode(null))
 
     return () => simulation.stop()
-  }, [activeFilters, searchQuery])
+  }, [nodes, edges, activeFilters, searchQuery])
 
   const toggleFilter = (type) => {
     setActiveFilters(prev => {
