@@ -30,13 +30,13 @@ function PipelineVisualizer({ activeStep }) {
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 0' }}>
       {PIPELINE_STEPS.map((step, i) => {
         const Icon = step.icon
-        const state = i < activeStep ? 'done' : i === activeStep ? 'active' : 'pending'
+        const state = activeStep >= 5 ? 'done' : i < activeStep ? 'done' : i === activeStep ? 'active' : 'pending'
         return (
           <div key={step.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, position: 'relative' }}>
             {i < PIPELINE_STEPS.length - 1 && (
               <div style={{
                 position: 'absolute', top: 20, left: '55%', right: '-45%', height: 2,
-                background: i < activeStep
+                background: (activeStep >= 5 || i < activeStep)
                   ? 'linear-gradient(90deg, var(--green-500), var(--green-400))'
                   : 'var(--border-subtle)',
                 transition: 'background 0.5s ease',
@@ -240,7 +240,7 @@ export default function DocumentIngestion() {
                   </div>
                   {pipelineStep === 5 && <span className="badge badge-green"><CheckCircle size={10} /> Complete</span>}
                 </div>
-                <PipelineVisualizer activeStep={Math.min(pipelineStep, 4)} />
+                <PipelineVisualizer activeStep={pipelineStep} />
 
                 {/* Entities */}
                 {showEntities && (
