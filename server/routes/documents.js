@@ -64,19 +64,20 @@ router.post('/upload', authenticateToken, requireRole('Plant Engineer', 'Plant A
     }
     db.data.documents.push(newDoc)
 
-    // Generate Chunks & Vector Embeddings
-    for (let i = 0; i < chunks.length; i++) {
-      const chunkTextContent = chunks[i]
+    // Generate Chunks & Vector Embeddings (Parallelized)
+    const chunkPromises = chunks.slice(0, 15).map(async (chunkTextContent, i) => {
       const embeddingValues = await generateEmbedding(chunkTextContent)
-
-      db.data.document_chunks.push({
+      return {
         id: `chunk_${docId}_${i}`,
         document_id: docId,
         chunk_index: i,
         content: chunkTextContent,
         embedding: embeddingValues,
-      })
-    }
+      }
+    })
+
+    const processedChunks = await Promise.all(chunkPromises)
+    db.data.document_chunks.push(...processedChunks)
 
     // Auto-create Knowledge Graph Node for Document
     db.data.graph_nodes.push({
