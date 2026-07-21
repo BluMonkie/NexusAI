@@ -71,7 +71,22 @@ export default function ComplianceIntelligence() {
           <p>Regulatory gap detection, audit readiness, and quality deviation monitoring</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-secondary btn-sm">
+          <button className="btn btn-secondary btn-sm" onClick={() => {
+            const report = {
+              title: "NEXUS IQ — Compliance Audit Package",
+              timestamp: new Date().toISOString(),
+              overallScore: "87.4%",
+              status: "Audit Ready with Minor Warnings",
+              standards: ["OISD-STD-117", "PESO Static Pressure Rules", "ISO 45001:2018", "OSHA 1910.147"],
+              requirementsCount: requirements.length
+            }
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `Compliance_Audit_Package_${Date.now()}.json`
+            a.click()
+          }}>
             <Download size={14} /> Generate Audit Package
           </button>
           <button className="btn btn-primary btn-sm" onClick={() => navigate('/copilot')}>

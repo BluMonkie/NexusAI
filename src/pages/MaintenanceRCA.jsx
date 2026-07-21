@@ -376,7 +376,7 @@ export default function MaintenanceRCA() {
                   <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>cost</div>
                 </div>
               </div>
-              <button className="btn btn-secondary btn-sm" style={{ width: '100%', marginTop: 12, justifyContent: 'center' }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => setSelectedRCA(rca)} style={{ width: '100%', marginTop: 12, justifyContent: 'center' }}>
                 View Fishbone RCA <ChevronRight size={13} />
               </button>
             </div>
