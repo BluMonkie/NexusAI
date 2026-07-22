@@ -400,7 +400,7 @@ export default function DocumentIngestion() {
               {selectedDoc.file_path && (
                 <button className="btn btn-secondary btn-sm" onClick={() => {
                   const filename = selectedDoc.file_path.split(/[/\\]/).pop()
-                  window.open(`http://localhost:3001/uploads/${filename}`, '_blank')
+                  window.open(`/uploads/${filename}`, '_blank')
                 }}>
                   <Eye size={13} /> Open File
                 </button>
