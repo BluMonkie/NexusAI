@@ -100,10 +100,12 @@ export default function KnowledgeGraph() {
       .filter(e => e.source && e.target)
 
     const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(d => d.id).distance(90).strength(0.4))
-      .force('charge', d3.forceManyBody().strength(-200))
+      .force('link', d3.forceLink(links).id(d => d.id).distance(80).strength(0.35))
+      .force('charge', d3.forceManyBody().strength(-160))
       .force('center', d3.forceCenter(W / 2, H / 2))
-      .force('collision', d3.forceCollide(30))
+      .force('x', d3.forceX(W / 2).strength(0.06))
+      .force('y', d3.forceY(H / 2).strength(0.06))
+      .force('collision', d3.forceCollide(35))
 
     simulationRef.current = simulation
 
@@ -125,7 +127,10 @@ export default function KnowledgeGraph() {
       .data(nodes).join('g')
       .call(d3.drag()
         .on('start', (event, d) => { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y })
-        .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y })
+        .on('drag', (event, d) => {
+          d.fx = Math.max(40, Math.min(W - 40, event.x))
+          d.fy = Math.max(40, Math.min(H - 40, event.y))
+        })
         .on('end', (event, d) => { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null })
       )
       .on('click', (event, d) => { event.stopPropagation(); setSelectedNode(d) })
@@ -165,6 +170,10 @@ export default function KnowledgeGraph() {
       .text(d => d.label.length > 16 ? d.label.slice(0, 14) + '…' : d.label)
 
     simulation.on('tick', () => {
+      nodes.forEach(d => {
+        d.x = Math.max(40, Math.min(W - 40, d.x))
+        d.y = Math.max(40, Math.min(H - 40, d.y))
+      })
       link
         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y)
