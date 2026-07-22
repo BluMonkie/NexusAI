@@ -47,10 +47,14 @@ export function cosineSimilarity(vecA, vecB) {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB))
 }
 
+const STOPWORDS = new Set(['what','is','the','tell','me','about','how','do','does','did','a','an','for','of','in','on','at','to','from','by','with','and','or','but','not','can','this','that','these','those','which','where','when','who','why','are','was','were','has','have','had','be','been','being','get','got','all','any','some','more','also','just','very','its','it','they','them','their','we','you','your','my','he','she','his','her','give','please','show','find','explain','describe','list'])
+
 export function keywordScore(text, query) {
   if (!text || !query) return 0
   const cleanQuery = query.replace(/[^\w\s-]/g, ' ').toLowerCase()
-  const queryWords = cleanQuery.split(/\s+/).filter(w => w.length >= 2)
+  const queryWords = cleanQuery.split(/\s+/).filter(w => w.length >= 2 && !STOPWORDS.has(w))
+  if (queryWords.length === 0) return 0
+
   const textLower = text.toLowerCase()
   const textNormalized = textLower.replace(/[-_\s]/g, '')
 
@@ -60,7 +64,7 @@ export function keywordScore(text, query) {
     const isTag = /\d/.test(wordNoHyphen)
 
     if (textLower.includes(word) || (wordNoHyphen.length >= 3 && textNormalized.includes(wordNoHyphen))) {
-      // High tag boost if query word contains numbers (e.g. h215, h-215, p215a, esdv-215)
+      // Very high tag boost for equipment/incident IDs (contain digits: H215, H-215, P215A, TRN-2025-062)
       if (isTag) {
         score += 10
       } else {
