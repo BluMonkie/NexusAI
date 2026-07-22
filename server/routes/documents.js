@@ -142,12 +142,36 @@ router.delete('/:id', authenticateToken, requireRole('Plant Engineer', 'Plant Ad
     try { fs.unlinkSync(doc.file_path) } catch {}
   }
 
+  // 1. Identify all graph relationship edges connected to this document
+  const linkedEdges = (db.data.graph_edges || []).filter(e =>
+    e.source === id || e.target === id || e.source_id === id || e.target_id === id
+  )
+  const linkedTargetIds = linkedEdges.map(e => (e.target === id || e.target_id === id) ? (e.source || e.source_id) : (e.target || e.target_id))
+
+  // 2. Remove document record & document chunks
   db.data.documents.splice(docIndex, 1)
-  db.data.document_chunks = db.data.document_chunks.filter(c => c.document_id !== id)
-  db.data.graph_nodes = db.data.graph_nodes.filter(n => n.id !== id)
+  db.data.document_chunks = (db.data.document_chunks || []).filter(c => c.document_id !== id)
+
+  // 3. Remove document graph node
+  db.data.graph_nodes = (db.data.graph_nodes || []).filter(n => n.id !== id)
+
+  // 4. Remove all connecting edges linked to this document
+  db.data.graph_edges = (db.data.graph_edges || []).filter(e =>
+    e.source !== id && e.target !== id && e.source_id !== id && e.target_id !== id
+  )
+
+  // 5. Cascade cleanup: Remove extracted entity nodes that came from this document if they have no other connections
+  for (const targetId of linkedTargetIds) {
+    const remainingEdges = (db.data.graph_edges || []).filter(e =>
+      e.source === targetId || e.target === targetId || e.source_id === targetId || e.target_id === targetId
+    )
+    if (remainingEdges.length === 0) {
+      db.data.graph_nodes = (db.data.graph_nodes || []).filter(n => n.id !== targetId)
+    }
+  }
 
   await db.write()
-  res.json({ message: 'Document and indexed chunks successfully removed.' })
+  res.json({ message: 'Document, indexed chunks, extracted entity nodes, and graph relationships successfully removed.' })
 })
 
 export default router
