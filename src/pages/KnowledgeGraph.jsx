@@ -100,12 +100,10 @@ export default function KnowledgeGraph() {
       .filter(e => e.source && e.target)
 
     const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(d => d.id).distance(80).strength(0.35))
-      .force('charge', d3.forceManyBody().strength(-160))
+      .force('link', d3.forceLink(links).id(d => d.id).distance(90).strength(0.4))
+      .force('charge', d3.forceManyBody().strength(-200))
       .force('center', d3.forceCenter(W / 2, H / 2))
-      .force('x', d3.forceX(W / 2).strength(0.06))
-      .force('y', d3.forceY(H / 2).strength(0.06))
-      .force('collision', d3.forceCollide(35))
+      .force('collision', d3.forceCollide(30))
 
     simulationRef.current = simulation
 
@@ -127,10 +125,7 @@ export default function KnowledgeGraph() {
       .data(nodes).join('g')
       .call(d3.drag()
         .on('start', (event, d) => { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y })
-        .on('drag', (event, d) => {
-          d.fx = Math.max(40, Math.min(W - 40, event.x))
-          d.fy = Math.max(40, Math.min(H - 40, event.y))
-        })
+        .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y })
         .on('end', (event, d) => { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null })
       )
       .on('click', (event, d) => { event.stopPropagation(); setSelectedNode(d) })
@@ -170,10 +165,6 @@ export default function KnowledgeGraph() {
       .text(d => d.label.length > 16 ? d.label.slice(0, 14) + '…' : d.label)
 
     simulation.on('tick', () => {
-      nodes.forEach(d => {
-        d.x = Math.max(40, Math.min(W - 40, d.x))
-        d.y = Math.max(40, Math.min(H - 40, d.y))
-      })
       link
         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y)
@@ -244,10 +235,10 @@ export default function KnowledgeGraph() {
     : []
 
   return (
-    <div style={{ height: 'calc(100vh - var(--topbar-height) - 48px)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: 'calc(100vh - var(--topbar-height) - 48px)', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, flexShrink: 0 }}>
-        <div style={{ flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexShrink: 0, flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 200px', minWidth: 200 }}>
           <h1 style={{ fontSize: '1.5rem', margin: 0 }}>Knowledge Graph</h1>
           <p style={{ margin: 0, fontSize: '0.8rem' }}>
             {filteredNodes.length} nodes · {filteredEdges.length} edges · Click node for details
@@ -259,15 +250,9 @@ export default function KnowledgeGraph() {
         {/* Search */}
         <div style={{ position: 'relative' }}>
           <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input className="input" style={{ paddingLeft: 30, width: 220, height: 34, fontSize: '0.8125rem' }}
+          <input className="input" style={{ paddingLeft: 30, width: 180, height: 34, fontSize: '0.8125rem' }}
             placeholder="Search nodes..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
         </div>
-        {/* Stats */}
-        {Object.entries(GRAPH_STATS.byType).map(([type, count]) => (
-          <div key={type} style={{ fontSize: '0.7rem', color: NODE_COLORS[type], fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }} className="hide-mobile">
-            {count} {TYPE_LABELS[type]}
-          </div>
-        ))}
       </div>
 
       {/* Filter pills */}
