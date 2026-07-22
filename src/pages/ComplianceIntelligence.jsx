@@ -116,14 +116,21 @@ export default function ComplianceIntelligence() {
           </div>
         </div>
         {[
-          { label: 'Total Requirements', value: COMPLIANCE_REQUIREMENTS.length, color: 'blue' },
-          { label: 'Non-Compliant', value: COMPLIANCE_REQUIREMENTS.filter(r => r.status === 'non-compliant').length, color: 'red' },
-          { label: 'Partial Compliance', value: COMPLIANCE_REQUIREMENTS.filter(r => r.status === 'partial').length, color: 'amber' },
-          { label: 'Fully Compliant', value: COMPLIANCE_REQUIREMENTS.filter(r => r.status === 'compliant').length, color: 'green' },
-        ].map(({ label, value, color }) => {
+          { label: 'Total Requirements', value: COMPLIANCE_REQUIREMENTS.length, color: 'blue', targetTab: 'Requirements' },
+          { label: 'Non-Compliant', value: COMPLIANCE_REQUIREMENTS.filter(r => r.status === 'non-compliant').length, color: 'red', targetTab: 'Gaps' },
+          { label: 'Partial Compliance', value: COMPLIANCE_REQUIREMENTS.filter(r => r.status === 'partial').length, color: 'amber', targetTab: 'Gaps' },
+          { label: 'Fully Compliant', value: COMPLIANCE_REQUIREMENTS.filter(r => r.status === 'compliant').length, color: 'green', targetTab: 'Requirements' },
+        ].map(({ label, value, color, targetTab }) => {
           const c = { blue: 'var(--blue-400)', red: 'var(--red-400)', amber: 'var(--amber-400)', green: 'var(--green-400)' }[color]
           return (
-            <div key={label} className="card" style={{ textAlign: 'center' }}>
+            <div
+              key={label}
+              className="card"
+              onClick={() => setActiveTab(targetTab)}
+              style={{ textAlign: 'center', cursor: 'pointer', transition: 'all 0.15s ease' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = c}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}
+            >
               <div className="stat-number" style={{ color: c, fontSize: '2.5rem' }}>{value}</div>
               <div className="stat-label">{label}</div>
             </div>
@@ -251,9 +258,18 @@ export default function ComplianceIntelligence() {
                     {gap.nextDue && <span style={{ fontSize: '0.75rem', color: 'var(--amber-400)', fontFamily: 'var(--font-mono)' }}>Due: {gap.nextDue}</span>}
                   </div>
                 </div>
-                <div style={{ flexShrink: 0, background: 'var(--bg-elevated)', borderRadius: 8, padding: '10px 14px', fontSize: '0.78rem', maxWidth: 200, border: '1px solid var(--border-subtle)' }}>
-                  <div style={{ fontWeight: 700, color: 'var(--green-400)', marginBottom: 4, fontSize: '0.72rem', textTransform: 'uppercase' }}>Remediation</div>
-                  <div style={{ color: 'var(--text-secondary)' }}>{gap.remediation}</div>
+                <div style={{ flexShrink: 0, background: 'var(--bg-elevated)', borderRadius: 8, padding: '10px 14px', fontSize: '0.78rem', maxWidth: 220, border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, color: 'var(--green-400)', marginBottom: 4, fontSize: '0.72rem', textTransform: 'uppercase' }}>Remediation</div>
+                    <div style={{ color: 'var(--text-secondary)', marginBottom: 10 }}>{gap.remediation}</div>
+                  </div>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    style={{ width: '100%', fontSize: '0.72rem', padding: '4px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                    onClick={() => navigate(`/copilot?q=${encodeURIComponent(`How to fix compliance gap for ${gap.regId} §${gap.section}: ${gap.title}? Finding: ${gap.finding}`)}`)}
+                  >
+                    <Zap size={12} /> Fix with AI Copilot
+                  </button>
                 </div>
               </div>
             </div>
