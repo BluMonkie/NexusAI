@@ -52,13 +52,17 @@ export function keywordScore(text, query) {
   const cleanQuery = query.replace(/[^\w\s-]/g, ' ').toLowerCase()
   const queryWords = cleanQuery.split(/\s+/).filter(w => w.length >= 2)
   const textLower = text.toLowerCase()
+  const textNormalized = textLower.replace(/[-_\s]/g, '')
 
   let score = 0
   for (const word of queryWords) {
-    if (textLower.includes(word)) {
-      // Exact tag boost if query word contains numbers/hyphens e.g. h-215, p-215a
-      if (/[\d-]/.test(word)) {
-        score += 5
+    const wordNoHyphen = word.replace(/[-_\s]/g, '')
+    const isTag = /\d/.test(wordNoHyphen)
+
+    if (textLower.includes(word) || (wordNoHyphen.length >= 3 && textNormalized.includes(wordNoHyphen))) {
+      // High tag boost if query word contains numbers (e.g. h215, h-215, p215a, esdv-215)
+      if (isTag) {
+        score += 10
       } else {
         score += 1
       }

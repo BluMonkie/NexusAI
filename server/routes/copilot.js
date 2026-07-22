@@ -49,7 +49,11 @@ router.post('/chat', authenticateToken, async (req, res) => {
     const allNodes = db.data?.graph_nodes || []
     const matchedNodes = allNodes.filter(n => {
       const targetStr = `${n.id} ${n.label} ${n.type} ${n.area}`.toLowerCase()
-      return msgWords.some(w => targetStr.includes(w))
+      const targetNorm = targetStr.replace(/[-_\s]/g, '')
+      return msgWords.some(w => {
+        const cleanW = w.replace(/[-_\s]/g, '')
+        return targetStr.includes(w) || (cleanW.length >= 3 && targetNorm.includes(cleanW))
+      })
     })
 
     const equipmentNodes = (matchedNodes.length > 0 ? matchedNodes : allNodes)
