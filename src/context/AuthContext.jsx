@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { apiFetch } from '../services/apiClient'
+import LoginModal from '../components/Auth/LoginModal'
 
 const AuthContext = createContext(null)
 
@@ -7,42 +8,20 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(localStorage.getItem('nexusiq_token') || null)
   const [loading, setLoading] = useState(true)
+  const [showLoginModal, setShowLoginModal] = useState(false)
 
   useEffect(() => {
     async function loadUser() {
       if (!token) {
-        try {
-          // Auto-authenticate as demo Plant Administrator if no token exists
-          const res = await apiFetch('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email: 'admin@nexusiq.io', password: 'admin123' }),
-          })
-          localStorage.setItem('nexusiq_token', res.token)
-          setToken(res.token)
-          setUser(res.user)
-        } catch (err) {
-          console.warn('Auto-login failed:', err.message)
-        } finally {
-          setLoading(false)
-        }
+        setLoading(false)
         return
       }
       try {
         const res = await apiFetch('/auth/me')
         setUser(res.user)
       } catch (err) {
-        console.warn('Auth session expired, attempting auto-login:', err.message)
-        try {
-          const res = await apiFetch('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email: 'admin@nexusiq.io', password: 'admin123' }),
-          })
-          localStorage.setItem('nexusiq_token', res.token)
-          setToken(res.token)
-          setUser(res.user)
-        } catch (autoErr) {
-          logout()
-        }
+        console.warn('Auth session expired or invalid:', err.message)
+        logout()
       } finally {
         setLoading(false)
       }
@@ -58,6 +37,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('nexusiq_token', res.token)
     setToken(res.token)
     setUser(res.user)
+    setShowLoginModal(false)
     return res.user
   }
 
@@ -67,9 +47,13 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  const openLoginModal = () => setShowLoginModal(true)
+  const closeLoginModal = () => setShowLoginModal(false)
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading, showLoginModal, openLoginModal, closeLoginModal }}>
       {children}
+      <LoginModal isOpen={showLoginModal} onClose={closeLoginModal} />
     </AuthContext.Provider>
   )
 }

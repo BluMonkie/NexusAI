@@ -124,12 +124,16 @@ export async function queryAI(userMessage, conversationHistory = []) {
     }
   } catch (err) {
     console.error('Backend RAG API Error:', err)
+    const isAuthError = err.message.includes('token') || err.message.includes('Access denied') || err.message.includes('401')
     return {
-      answer: `Backend RAG API Error: ${err.message}. Please refresh the page to renew your authentication token.`,
+      answer: isAuthError
+        ? 'Authentication Required: Access denied. No valid authentication token provided. Please sign in to query AI Copilot.'
+        : `Backend RAG API Error: ${err.message}. Please check server connection.`,
       sources: [],
       confidence: 0,
       relatedQuestions: [],
       entities: [],
+      requiresAuth: isAuthError,
     }
   }
 }

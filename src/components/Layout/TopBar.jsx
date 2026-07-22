@@ -34,8 +34,7 @@ const NOTIFICATIONS = [
 export default function TopBar({ sidebarCollapsed }) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
-  const [showLogin, setShowLogin] = useState(false)
+  const { user, logout, openLoginModal } = useAuth()
   const page = PAGE_TITLES[pathname] || { title: 'NEXUS IQ', sub: '' }
   const [showNotifs, setShowNotifs] = useState(false)
   const [searchVal, setSearchVal] = useState('')
@@ -234,7 +233,7 @@ export default function TopBar({ sidebarCollapsed }) {
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div
-              onClick={() => setShowLogin(true)}
+              onClick={openLoginModal}
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '4px 12px', borderRadius: 20,
@@ -261,13 +260,11 @@ export default function TopBar({ sidebarCollapsed }) {
             </button>
           </div>
         ) : (
-          <button className="btn btn-primary btn-sm" onClick={() => setShowLogin(true)}>
+          <button className="btn btn-primary btn-sm" onClick={openLoginModal}>
             <LogIn size={14} /> Sign In
           </button>
         )}
       </header>
-
-      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
     </>
   )
 }

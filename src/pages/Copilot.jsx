@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Cpu, User, ChevronRight, RotateCcw, Zap, FileText, Star, X } from 'lucide-react'
+import { Send, Cpu, User, ChevronRight, RotateCcw, Zap, FileText, Star, X, LogIn, Shield } from 'lucide-react'
 import { queryAI, AI_CONFIG } from '../services/aiService'
 import { STARTER_QUESTIONS } from '../data/copilotResponses'
+import { useAuth } from '../context/AuthContext'
 
 const AI_AVATAR = () => (
   <div style={{
@@ -128,6 +129,17 @@ function ChatMessage({ msg }) {
                 {msg.sources.map((s, i) => <SourceCitation key={i} source={s} index={i} />)}
               </div>
             )}
+            {msg.requiresAuth && (
+              <div style={{ marginTop: 12 }}>
+                <button
+                  className="btn btn-primary btn-sm"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                  onClick={msg.onSignIn}
+                >
+                  <LogIn size={14} /> Sign In to NEXUS IQ
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -163,6 +175,7 @@ function ChatMessage({ msg }) {
 }
 
 export default function Copilot() {
+  const { user, openLoginModal } = useAuth()
   const [messages, setMessages] = useState([
     {
       id: 0, role: 'ai', content: `Hello! I'm **NEXUS IQ Copilot** — your AI-powered industrial knowledge assistant.
@@ -188,6 +201,22 @@ Try one of the suggested questions below, or type your own query.`,
     if (!query || isLoading) return
     setInput('')
 
+    if (!user) {
+      const userMsg = { id: Date.now(), role: 'user', content: query }
+      const aiAuthMsg = {
+        id: Date.now() + 1,
+        role: 'ai',
+        content: 'Authentication Required: Access denied. Please sign in to query AI Copilot.',
+        sources: [],
+        confidence: 0,
+        requiresAuth: true,
+        onSignIn: openLoginModal,
+      }
+      setMessages(prev => [...prev, userMsg, aiAuthMsg])
+      openLoginModal()
+      return
+    }
+
     const userMsg = { id: Date.now(), role: 'user', content: query }
     setMessages(prev => [...prev, userMsg])
     setIsLoading(true)
@@ -206,6 +235,8 @@ Try one of the suggested questions below, or type your own query.`,
         confidence: result.confidence,
         entities: result.entities,
         relatedQuestions: result.relatedQuestions,
+        requiresAuth: result.requiresAuth,
+        onSignIn: openLoginModal,
         onFollowUp: addFollowUp,
         _fallback: result._fallback,
       }])
