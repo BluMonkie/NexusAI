@@ -74,7 +74,7 @@ export async function extractIndustrialEntities(text, fileName = '', defaultArea
 
     if (!cleanId || cleanId.length < 2 || cleanId.length > 35 || seenIds.has(cleanId)) return
     // Reject common English words or sentence fragments
-    if (/^(?:valves?|vessel|drum|filter|pump|blower|complex|scenario|notice|title|purpose|loto|operating|procedure|illustrative|associated|primary)$/i.test(cleanId)) return
+    if (/^(?:valves?|vessel|drum|filters?|pump|blower|complex|scenario|notice|title|purpose|loto|operating|procedure|illustrative|associated|primary|complete|burner|purge|circulation|ignite|firing|record|stop|isolate|close|verify|entirely)$/i.test(cleanId)) return
     if (cleanId.includes(' ') && !/^(?:API|ISO|OISD|PESO|OSHA|ASME)\b/i.test(cleanId)) return
 
     seenIds.add(cleanId)
@@ -140,11 +140,11 @@ ${textContent.slice(0, 4000)}`
   }
 
   // ── 2. Universal Key-Value & Label Matcher ─────────────────────
-  const kvRegex = /(?:Primary\s+Asset|Associated\s+(?:Blower|Pump|Compressor|Vessel|Valve|Motor|Turbine|Exchanger)|Relief\s+Valve|Emergency\s+Isolation\s+Valve|Equipment(?:\s+Name)?|Asset(?:\s+Name)?|Incident\s+ID|Document\s+ID|Reference\s+Standards?|Standard|SOP(?:\s+ID)?|Work\s+Order(?:\s+ID)?)\s*[:\t-]\s*([^\n\r,;(]{2,100})/gi
+  const kvRegex = /(?:Primary\s+Asset|Associated\s+(?:Blower|Pump|Compressor|Vessel|Valve|Motor|Turbine|Exchanger)|Relief\s+Valve|Emergency\s+(?:Isolation|Shutoff)\s+Valve|Emergency\s+Shutoff|Equipment(?:\s+Name)?|Asset(?:\s+Name)?|Incident\s+ID|Document\s+ID|Reference\s+Standards?|Standard|SOP(?:\s+ID)?|Work\s+Order(?:\s+ID)?)\s*[:\t-]\s*([^\n\r,;(]{2,100})/gi
   let kvMatch
   while ((kvMatch = kvRegex.exec(textContent)) !== null) {
     const rawVal = kvMatch[1].trim()
-    // Extract tag ID from parentheses or capital word boundary e.g. "Sulfur Recovery Knockout Drum (KD-801)"
+    // Extract tag ID from parentheses or capital word boundary e.g. "Crude Feed Heater (H-215)"
     const tagInParen = rawVal.match(/\(([^()]+)\)/)
     const tagMatch = tagInParen ? tagInParen[1] : rawVal.match(/\b(?:[A-Z0-9_-]{2,20})\b/)?.[0] || rawVal
     const cleanId = tagMatch.trim()
@@ -155,14 +155,14 @@ ${textContent.slice(0, 4000)}`
     if (lowerRaw.includes('incident') || lowerRaw.includes('trn-') || lowerRaw.includes('inc-')) type = 'incident'
     else if (lowerRaw.includes('sop-') || lowerRaw.includes('procedure') || lowerRaw.includes('rev')) type = 'procedure'
     else if (lowerRaw.includes('api') || lowerRaw.includes('iso') || lowerRaw.includes('oisd') || lowerRaw.includes('standard')) type = 'regulation'
-    else if (lowerRaw.includes('psv') || lowerRaw.includes('eiv') || lowerRaw.includes('relief') || lowerRaw.includes('emergency')) criticality = 'critical'
-    else if (lowerRaw.includes('drum') || lowerRaw.includes('vessel') || lowerRaw.includes('pump') || lowerRaw.includes('blower')) criticality = 'high'
+    else if (lowerRaw.includes('psv') || lowerRaw.includes('eiv') || lowerRaw.includes('esdv') || lowerRaw.includes('relief') || lowerRaw.includes('emergency')) criticality = 'critical'
+    else if (lowerRaw.includes('drum') || lowerRaw.includes('vessel') || lowerRaw.includes('pump') || lowerRaw.includes('heater')) criticality = 'high'
 
     addNode(cleanId, rawVal, type, defaultArea, 'active', criticality)
   }
 
   // ── 3. Flexible Multi-Pattern Matchers ─────────────────────────
-  const equipmentRegex = /\b(?:[A-Z]{1,5}-\d{1,5}(?:-[A-Z0-9]+)*|\b(?:PUMP|COMP|TURBINE|VALVE|BLOWER|VESSEL|DRUM|HEATER|EXCHANGER|FILTER|TANK|MOTOR)\s*[A-Z0-9_-]{1,10})\b/gi
+  const equipmentRegex = /\b(?:[A-Z]{1,5}-\d{1,5}[A-Z0-9_-]*|\b(?:PUMP|COMP|TURBINE|VALVE|BLOWER|VESSEL|DRUM|HEATER|EXCHANGER|FILTER|TANK|MOTOR)\s*[A-Z0-9_-]{1,10})\b/gi
   const incidentRegex = /\b(?:INC|TRN|CAPA|EVENT|TICKET)[-_]\d{3,6}[-_]?\d{0,4}\b/gi
   const sopRegex = /\b(?:SOP|MOP|EOP)[-_][A-Z0-9_-]{3,25}\b/gi
   const complianceRegex = /\b(?:OISD[-_\s]STD[-_\s]?\d+|API[-_\s]?\d+|ISO[-_\s]?\d+(?::\d+)?|OSHA[-_\s]?\d+|PESO[A-Za-z0-9\s]+Rules?\s*\d+)\b/gi

@@ -47,6 +47,15 @@
       "status": "indexed",
       "file_path": "C:\\Users\\Lenovo\\Documents\\Projects\\Hackathon\\uploads\\1784729634101-561368080-Fictional_Training_SOP_SRU801.pdf",
       "uploaded_at": "2026-07-22T14:13:54.136Z"
+    },
+    {
+      "id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "name": "Fictional_Training_SOP_CDU215.pdf",
+      "type": "PDF",
+      "category": "Engineering SOP",
+      "status": "indexed",
+      "file_path": "uploads\\Fictional_Training_SOP_CDU215.pdf",
+      "uploaded_at": "2026-07-22T17:15:39.470Z"
     }
   ],
   "document_chunks": [
@@ -62,6 +71,34 @@
       "document_id": "DOC_1784729634103",
       "chunk_index": 0,
       "content": "FICTIONAL INDUSTRIAL TRAINING COMPLEX Training Example – Standard Operating Procedure & Incident Review Document ID SOP-SRU-801-REV0 (Training Example) Title Emergency Isolation Procedure for Sulfur Recovery Knockout Drum (KD-801) Facility Sulfur Recovery Training Unit Effective Date January 15, 2025 Reference Standards API 521, ISO 45001:2018 (Illustrative Only) Purpose This is a fictional engineering training document intended to demonstrate professional SOP formatting. It does not represent a real facility or operating procedure. Equipment Information Parameter Value Primary Asset KD-801 Sulfur Recovery Knockout Drum Associated Blower B-801A Process Gas Blower Normal Pressure 9.8 bar MAWP 15.0 bar Operating Temperature 210 °C High Pressure Alarm 13.5 bar Relief Valve PSV-801A (14.2 bar) Emergency Isolation Valve EIV-801 Illustrative Operating Procedure • Verify work authorization, instrument readiness, and communications. • Purge vessel with inert nitrogen before introducing process gas. • Start auxiliary systems and bring blower B-801A online gradually. • Maintain drum level within operating band and observe pressure trend. • If pressure approaches alarm level, reduce upstream flow and prepare isolation. • Record all operating parameters in the shift log. Illustrative Lockout / Tagout • Stop blower B-801A and isolate electrical supply. • Close inlet and outlet isolation valves. -- 1 of 2 -- • Apply locks, tags, and verify zero energy. • Drain and vent equipment before maintenance. Illustrative Incident Review Incident ID: TRN-2025-031 Scenario: Simulated increase in knockout drum pressure during a training exercise following reduced downstream gas flow. Illustrative Root Cause: Partial fouling of the downstream gas filter increased flow resistance, resulting in elevated vessel pressure. Illustrative Corrective Actions: Replace filter element, review differential-pressure trends, improve inspection frequency, and conduct refresher operator training. Document Notice This document is entirely fictional and is intended solely for educational, formatting, and training purposes. -- 2 of 2 --",
+      "embedding": null
+    },
+    {
+      "id": "chunk_DOC_Fictional_Training_SOP_CDU215_pdf_0",
+      "document_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "chunk_index": 0,
+      "content": "FICTIONAL PROCESS ENGINEERING TRAINING\nCENTER\nIllustrative SOP & Incident Review\nDocument ID SOP-CDU-215-REV2 (Training Example)\nTitle Controlled Startup Procedure for Crude Unit Feed Heater (H-215)\nFacility Crude Distillation Training Unit\nEffective Date March 5, 2025\nPurpose\nFictional document for engineering training and formatting practice only.\nParameter Value\nEquipment H-215 Crude Feed Heater\nPump P-215A Feed Transfer Pump\nOutlet Temperature 295 C\nFuel Gas Pressure 5.4 bar\nHigh Temp Alarm 310 C\nEmergency Shutoff ESDV-215\nIllustrative Procedure\n• Verify permits and instrumentation.\n• Complete burner purge.\n• Establish circulation.\n• Ignite burners sequentially.\n• Increase firing gradually.\n• Record operating data.\nIllustrative LOTO\n• Stop pump.\n• Isolate power.\n• Close fuel gas valves.\n• Verify zero energy.\nIllustrative Incident\nIncident ID: TRN-2025-062\nScenario: Simulated high outlet temperature following reduced combustion airflow.\nIllustrative Root Cause: Fouled combustion air filters reduced airflow.",
+      "embedding": null
+    },
+    {
+      "id": "chunk_DOC_Fictional_Training_SOP_CDU215_pdf_1",
+      "document_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "chunk_index": 1,
+      "content": "-- 1 of 2 --",
+      "embedding": null
+    },
+    {
+      "id": "chunk_DOC_Fictional_Training_SOP_CDU215_pdf_2",
+      "document_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "chunk_index": 2,
+      "content": "Illustrative CAPA: Replace filters, inspect instrumentation, shorten inspection intervals, update\ntraining.\nNotice\nEntirely fictional. For educational use only.",
+      "embedding": null
+    },
+    {
+      "id": "chunk_DOC_Fictional_Training_SOP_CDU215_pdf_3",
+      "document_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "chunk_index": 3,
+      "content": "-- 2 of 2 --",
       "embedding": null
     }
   ],
@@ -616,6 +653,78 @@
         "tag": "SOP-SRU-801-REV0",
         "source_doc": "Fictional_Training_SOP_SRU801.pdf"
       }
+    },
+    {
+      "id": "CDU-215-REV2",
+      "label": "CDU-215-REV2",
+      "type": "procedure",
+      "area": "Area 300",
+      "status": "active",
+      "criticality": "medium",
+      "properties": {
+        "tag": "CDU-215-REV2",
+        "source_doc": "Fictional_Training_SOP_CDU215.pdf"
+      }
+    },
+    {
+      "id": "TRN-2025-062",
+      "label": "TRN-2025-062",
+      "type": "incident",
+      "area": "Area 300",
+      "status": "active",
+      "criticality": "medium",
+      "properties": {
+        "tag": "TRN-2025-062",
+        "source_doc": "Fictional_Training_SOP_CDU215.pdf"
+      }
+    },
+    {
+      "id": "H-215",
+      "label": "Title Controlled Startup Procedure for Crude Unit Feed Heater (H-215)",
+      "type": "equipment",
+      "area": "Area 300",
+      "status": "active",
+      "criticality": "medium",
+      "properties": {
+        "tag": "H-215",
+        "source_doc": "Fictional_Training_SOP_CDU215.pdf"
+      }
+    },
+    {
+      "id": "P-215A",
+      "label": "Pump P-215A Feed Transfer Pump",
+      "type": "equipment",
+      "area": "Area 300",
+      "status": "active",
+      "criticality": "medium",
+      "properties": {
+        "tag": "P-215A",
+        "source_doc": "Fictional_Training_SOP_CDU215.pdf"
+      }
+    },
+    {
+      "id": "ESDV-215",
+      "label": "Emergency Shutoff ESDV-215",
+      "type": "equipment",
+      "area": "Area 300",
+      "status": "active",
+      "criticality": "medium",
+      "properties": {
+        "tag": "ESDV-215",
+        "source_doc": "Fictional_Training_SOP_CDU215.pdf"
+      }
+    },
+    {
+      "id": "SOP-CDU-215-REV2",
+      "label": "Document ID SOP-CDU-215-REV2 (Training Example)",
+      "type": "procedure",
+      "area": "Area 300",
+      "status": "active",
+      "criticality": "high",
+      "properties": {
+        "tag": "SOP-CDU-215-REV2",
+        "source_doc": "Fictional_Training_SOP_CDU215.pdf"
+      }
     }
   ],
   "graph_edges": [
@@ -1023,6 +1132,60 @@
       "source": "DOC_1784729634103",
       "target": "ISO 45001:2018",
       "label": "GOVERNED_BY",
+      "type": "references"
+    },
+    {
+      "id": "edge_DOC_Fictional_Training_SOP_CDU215_pdf_CDU-215-REV2",
+      "source_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target_id": "CDU-215-REV2",
+      "source": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target": "CDU-215-REV2",
+      "label": "REFERENCES",
+      "type": "references"
+    },
+    {
+      "id": "edge_DOC_Fictional_Training_SOP_CDU215_pdf_TRN-2025-062",
+      "source_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target_id": "TRN-2025-062",
+      "source": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target": "TRN-2025-062",
+      "label": "REFERENCES",
+      "type": "references"
+    },
+    {
+      "id": "edge_DOC_Fictional_Training_SOP_CDU215_pdf_H-215",
+      "source_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target_id": "H-215",
+      "source": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target": "H-215",
+      "label": "REFERENCES",
+      "type": "references"
+    },
+    {
+      "id": "edge_DOC_Fictional_Training_SOP_CDU215_pdf_P-215A",
+      "source_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target_id": "P-215A",
+      "source": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target": "P-215A",
+      "label": "REFERENCES",
+      "type": "references"
+    },
+    {
+      "id": "edge_DOC_Fictional_Training_SOP_CDU215_pdf_ESDV-215",
+      "source_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target_id": "ESDV-215",
+      "source": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target": "ESDV-215",
+      "label": "REFERENCES",
+      "type": "references"
+    },
+    {
+      "id": "edge_DOC_Fictional_Training_SOP_CDU215_pdf_SOP-CDU-215-REV2",
+      "source_id": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target_id": "SOP-CDU-215-REV2",
+      "source": "DOC_Fictional_Training_SOP_CDU215_pdf",
+      "target": "SOP-CDU-215-REV2",
+      "label": "REFERENCES",
       "type": "references"
     }
   ],
