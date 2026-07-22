@@ -2,12 +2,12 @@ import fs from 'fs'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const rawPdfParse = require('pdf-parse')
-const pdfParse = typeof rawPdfParse === 'function' ? rawPdfParse : rawPdfParse.default
+const pdfParse = typeof rawPdfParse === 'function' ? rawPdfParse : (rawPdfParse.default || rawPdfParse)
 
 export function chunkText(text, chunkSize = 500, overlap = 50) {
   const words = text.split(/\s+/)
   const chunks = []
-  
+
   for (let i = 0; i < words.length; i += chunkSize - overlap) {
     const chunk = words.slice(i, i + chunkSize).join(' ')
     if (chunk.trim().length > 0) {
@@ -22,15 +22,27 @@ export async function parseDocument(filePath, fileType) {
     const fileBuffer = fs.readFileSync(filePath)
     let extractedText = ''
 
-    if (fileType.toLowerCase().includes('pdf')) {
+    if (fileType.toLowerCase().includes('pdf') || filePath.toLowerCase().endsWith('.pdf')) {
       try {
-        const pdfPromise = pdfParse(fileBuffer)
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('pdf-parse timed out after 3s')), 3000))
-        const pdfData = await Promise.race([pdfPromise, timeoutPromise])
-        extractedText = pdfData.text || ''
+        const { PDFParse } = await import('pdf-parse')
+        const parser = new PDFParse({ url: filePath })
+        await parser.load()
+        const textResult = await parser.getText()
+        extractedText = typeof textResult === 'string' ? textResult : (textResult.text || JSON.stringify(textResult))
       } catch (pdfErr) {
-        console.warn('pdf-parse failed/timed out, using regex stream fallback:', pdfErr.message)
-        extractedText = fileBuffer.toString('utf-8').replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+        console.warn('PDFParse failed/timed out, trying Uint8Array fallback:', pdfErr.message)
+        try {
+          const { PDFParse } = await import('pdf-parse')
+          const parser = new PDFParse({ data: new Uint8Array(fileBuffer) })
+          await parser.load()
+          const textResult = await parser.getText()
+          extractedText = typeof textResult === 'string' ? textResult : (textResult.text || '')
+        } catch (err2) {
+          console.warn('PDF string stream fallback:', err2.message)
+          const str = fileBuffer.toString('latin1')
+          const matches = str.match(/\(([^()]{2,120})\)/g) || []
+          extractedText = matches.map(m => m.slice(1, -1).replace(/\\/g, '')).join(' ')
+        }
       }
     } else {
       extractedText = fileBuffer.toString('utf-8')
@@ -50,7 +62,7 @@ export function extractIndustrialEntities(text, fileName = '', defaultArea = 'Ar
 
   // Pattern matchers
   const equipmentRegex = /\b(?:[A-Z]{1,4}-\d{2,4}(?:-[A-Z0-9]+)*[A-Z0-9]?|[A-Z]{1,3}\s\d{2,4})\b/g
-  const incidentRegex = /\bINC-\d{4}-\d{2,4}\b/g
+  const incidentRegex = /\b(?:INC|TRN|CAPA)-\d{4}-\d{2,4}\b/g
   const sopRegex = /\bSOP-[A-Z0-9-]+(?:-REV\d+)?\b/g
   const complianceRegex = /\b(?:OISD-STD-\d+|API\s\d+|ISO\s\d+:\d+|PESO\s[A-Za-z0-9\s]+Rules\s\d+)\b/gi
 
@@ -73,14 +85,14 @@ export function extractIndustrialEntities(text, fileName = '', defaultArea = 'Ar
   // Equipment Nodes
   for (const tag of eqMatches) {
     const upper = tag.toUpperCase()
-    if (['SOP', 'INC', 'REV', 'AREA', 'MAWP', 'LOTO', 'CAPA', 'CCR', 'PDF', 'TXT', 'DOC'].includes(upper)) continue
-    if (tag.startsWith('INC-') || tag.startsWith('SOP-') || tag.startsWith('OISD-')) continue
+    if (['SOP', 'INC', 'TRN', 'REV', 'AREA', 'MAWP', 'LOTO', 'CAPA', 'CCR', 'PDF', 'TXT', 'DOC'].includes(upper)) continue
+    if (tag.startsWith('INC-') || tag.startsWith('TRN-') || tag.startsWith('SOP-') || tag.startsWith('OISD-')) continue
 
     const labelContext = findContext(tag)
     let type = 'equipment'
     let criticality = 'medium'
-    if (tag.startsWith('D-') || tag.startsWith('V-') || tag.startsWith('C-')) criticality = 'high'
-    if (tag.startsWith('BDV-') || tag.startsWith('PSV-') || tag.startsWith('EDV-')) criticality = 'critical'
+    if (tag.startsWith('D-') || tag.startsWith('V-') || tag.startsWith('C-') || tag.startsWith('T-')) criticality = 'high'
+    if (tag.startsWith('BDV-') || tag.startsWith('PSV-') || tag.startsWith('EDV-') || tag.startsWith('EIV-')) criticality = 'critical'
 
     extractedNodes.push({
       id: tag,
