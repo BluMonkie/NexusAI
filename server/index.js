@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { initDatabase } from './db/database.js'
 
@@ -33,6 +34,16 @@ app.use('/api/graph', graphRoutes)
 app.use('/api/maintenance', maintenanceRoutes)
 app.use('/api/compliance', complianceRoutes)
 app.use('/api/lessons', lessonsRoutes)
+
+// Serve static frontend build (Vite dist) for fullstack production deployment
+const distPath = path.join(__dirname, '../dist')
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath))
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next()
+    res.sendFile(path.join(distPath, 'index.html'))
+  })
+}
 
 // Health Check
 app.get('/api/health', (req, res) => {
