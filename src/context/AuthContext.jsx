@@ -11,15 +11,38 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function loadUser() {
       if (!token) {
-        setLoading(false)
+        try {
+          // Auto-authenticate as demo Plant Administrator if no token exists
+          const res = await apiFetch('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email: 'admin@nexusiq.io', password: 'admin123' }),
+          })
+          localStorage.setItem('nexusiq_token', res.token)
+          setToken(res.token)
+          setUser(res.user)
+        } catch (err) {
+          console.warn('Auto-login failed:', err.message)
+        } finally {
+          setLoading(false)
+        }
         return
       }
       try {
         const res = await apiFetch('/auth/me')
         setUser(res.user)
       } catch (err) {
-        console.warn('Auth session expired:', err.message)
-        logout()
+        console.warn('Auth session expired, attempting auto-login:', err.message)
+        try {
+          const res = await apiFetch('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email: 'admin@nexusiq.io', password: 'admin123' }),
+          })
+          localStorage.setItem('nexusiq_token', res.token)
+          setToken(res.token)
+          setUser(res.user)
+        } catch (autoErr) {
+          logout()
+        }
       } finally {
         setLoading(false)
       }

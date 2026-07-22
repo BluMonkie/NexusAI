@@ -125,7 +125,7 @@ export async function queryAI(userMessage, conversationHistory = []) {
   } catch (err) {
     console.error('Backend RAG API Error:', err)
     return {
-      answer: `Backend RAG API Error: ${err.message}. Ensure Express backend is running on http://localhost:3001 and your JWT token is valid.`,
+      answer: `Backend RAG API Error: ${err.message}. Please refresh the page to renew your authentication token.`,
       sources: [],
       confidence: 0,
       relatedQuestions: [],
