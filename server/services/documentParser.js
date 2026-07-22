@@ -1,8 +1,4 @@
 import fs from 'fs'
-import { createRequire } from 'module'
-const require = createRequire(import.meta.url)
-const rawPdfParse = require('pdf-parse')
-const pdfParse = typeof rawPdfParse === 'function' ? rawPdfParse : (rawPdfParse.default || rawPdfParse)
 
 export function chunkText(text, chunkSize = 500, overlap = 50) {
   const words = text.split(/\s+/)
