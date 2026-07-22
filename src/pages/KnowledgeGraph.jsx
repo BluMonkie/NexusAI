@@ -190,6 +190,46 @@ export default function KnowledgeGraph() {
     })
   }
 
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newEntity, setNewEntity] = useState({
+    id: '', label: '', type: 'equipment', area: 'Area 200', criticality: 'medium', connectTo: '', relationship: 'FEEDS_INTO'
+  })
+  const [addError, setAddError] = useState(null)
+
+  const handleAddEntity = async (e) => {
+    e.preventDefault()
+    setAddError(null)
+    try {
+      const nodeRes = await apiFetch('/graph/node', {
+        method: 'POST',
+        body: JSON.stringify({
+          id: newEntity.id.trim(),
+          label: newEntity.label.trim(),
+          type: newEntity.type,
+          area: newEntity.area,
+          criticality: newEntity.criticality,
+        }),
+      })
+
+      if (newEntity.connectTo) {
+        await apiFetch('/graph/edge', {
+          method: 'POST',
+          body: JSON.stringify({
+            source_id: newEntity.id.trim(),
+            target_id: newEntity.connectTo,
+            label: newEntity.relationship,
+          }),
+        })
+      }
+
+      setShowAddModal(false)
+      setNewEntity({ id: '', label: '', type: 'equipment', area: 'Area 200', criticality: 'medium', connectTo: '', relationship: 'FEEDS_INTO' })
+      fetchGraph()
+    } catch (err) {
+      setAddError(err.message)
+    }
+  }
+
   const connectedEdges = selectedNode
     ? edges.filter(e => (e.source_id || e.source) === selectedNode.id || (e.target_id || e.target) === selectedNode.id)
     : []
@@ -204,6 +244,9 @@ export default function KnowledgeGraph() {
             {filteredNodes.length} nodes · {filteredEdges.length} edges · Click node for details
           </p>
         </div>
+        <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
+          <Plus size={14} /> Add Equipment / Entity
+        </button>
         {/* Search */}
         <div style={{ position: 'relative' }}>
           <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
@@ -372,6 +415,98 @@ export default function KnowledgeGraph() {
           </div>
         )}
       </div>
+
+      {/* Add Entity Modal */}
+      {showAddModal && (
+        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+          <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ padding: 28, maxWidth: 500 }}>
+            <div className="flex-between mb-md">
+              <h3 style={{ margin: 0 }}>Add Equipment / Knowledge Entity</h3>
+              <button className="btn btn-ghost" onClick={() => setShowAddModal(false)}><X size={18} /></button>
+            </div>
+            {addError && <div className="alert alert-danger mb-md">{addError}</div>}
+            <form onSubmit={handleAddEntity} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label className="section-label mb-sm" style={{ display: 'block' }}>Tag / ID (Required)</label>
+                <input
+                  className="input" style={{ width: '100%' }}
+                  placeholder="e.g. P-202B, V-305, T-101" required
+                  value={newEntity.id} onChange={e => setNewEntity({ ...newEntity, id: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="section-label mb-sm" style={{ display: 'block' }}>Name / Description (Required)</label>
+                <input
+                  className="input" style={{ width: '100%' }}
+                  placeholder="e.g. Heavy Gas Oil Charge Pump B" required
+                  value={newEntity.label} onChange={e => setNewEntity({ ...newEntity, label: e.target.value })}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label className="section-label mb-sm" style={{ display: 'block' }}>Entity Type</label>
+                  <select
+                    className="input" style={{ width: '100%' }}
+                    value={newEntity.type} onChange={e => setNewEntity({ ...newEntity, type: e.target.value })}
+                  >
+                    <option value="equipment">⚙️ Equipment</option>
+                    <option value="document">📄 Document</option>
+                    <option value="procedure">⚠️ Procedure</option>
+                    <option value="work_order">🔧 Work Order</option>
+                    <option value="incident">🚨 Incident</option>
+                    <option value="regulation">⚖️ Regulation</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="section-label mb-sm" style={{ display: 'block' }}>Plant Area</label>
+                  <select
+                    className="input" style={{ width: '100%' }}
+                    value={newEntity.area} onChange={e => setNewEntity({ ...newEntity, area: e.target.value })}
+                  >
+                    <option value="Area 100">Area 100 - Crude Unit</option>
+                    <option value="Area 200">Area 200 - Hydrocracker</option>
+                    <option value="Area 300">Area 300 - FCC Unit</option>
+                    <option value="Utilities">Utilities & Offsites</option>
+                    <option value="Global">Global / Facility Wide</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="section-label mb-sm" style={{ display: 'block' }}>Connect To Existing Entity (Optional)</label>
+                <select
+                  className="input" style={{ width: '100%' }}
+                  value={newEntity.connectTo} onChange={e => setNewEntity({ ...newEntity, connectTo: e.target.value })}
+                >
+                  <option value="">-- No Initial Connection --</option>
+                  {nodes.map(n => (
+                    <option key={n.id} value={n.id}>{n.id} — {n.label}</option>
+                  ))}
+                </select>
+              </div>
+              {newEntity.connectTo && (
+                <div>
+                  <label className="section-label mb-sm" style={{ display: 'block' }}>Relationship Type</label>
+                  <select
+                    className="input" style={{ width: '100%' }}
+                    value={newEntity.relationship} onChange={e => setNewEntity({ ...newEntity, relationship: e.target.value })}
+                  >
+                    <option value="FEEDS_INTO">FEEDS_INTO</option>
+                    <option value="MAINTAINED_BY">MAINTAINED_BY</option>
+                    <option value="GOVERNED_BY">GOVERNED_BY</option>
+                    <option value="OPERATED_BY">OPERATED_BY</option>
+                    <option value="REPORTS">REPORTS</option>
+                    <option value="REFERENCES">REFERENCES</option>
+                  </select>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 10 }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary"><Plus size={14} /> Add Entity</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
