@@ -123,6 +123,7 @@ router.post('/upload', authenticateToken, requireRole('Plant Engineer', 'Plant A
       message: 'Document successfully uploaded and indexed into RAG pipeline.',
       document: newDoc,
       chunksIndexed: chunks.length,
+      extractedNodes: extractedNodes,
     })
   } catch (err) {
     console.error('Upload Error:', err)

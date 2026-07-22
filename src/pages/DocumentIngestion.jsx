@@ -82,6 +82,7 @@ export default function DocumentIngestion() {
   const [showEntities, setShowEntities] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState(null)
   const [documents, setDocuments] = useState([])
+  const [extractedEntities, setExtractedEntities] = useState([])
   const [stats, setStats] = useState({ totalDocuments: 0, indexedChunks: 0, activeEntities: 0 })
   const [uploadError, setUploadError] = useState(null)
   const fileInputRef = useRef(null)
@@ -125,6 +126,7 @@ export default function DocumentIngestion() {
         body: formData,
       })
       if (res.document) setUploadedDoc(res.document)
+      if (res.extractedNodes) setExtractedEntities(res.extractedNodes)
 
       clearInterval(interval)
       setPipelineStep(4)
@@ -250,13 +252,26 @@ export default function DocumentIngestion() {
                 {/* Entities */}
                 {showEntities && (
                   <div style={{ marginTop: 16, animation: 'fade-in 0.5s ease' }}>
-                    <div className="section-label mb-sm">Extracted Entities (12 of 84)</div>
+                    <div className="section-label mb-sm">
+                      Extracted Entities ({extractedEntities.length > 0 ? extractedEntities.length : 12})
+                    </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {SAMPLE_ENTITIES.map((e, i) => (
-                        <div key={i} className={`badge badge-${e.color}`} style={{ cursor: 'pointer' }} title={e.type}>
-                          {e.text}
-                        </div>
-                      ))}
+                      {extractedEntities.length > 0 ? (
+                        extractedEntities.map((e, i) => {
+                          const badgeColor = e.type === 'critical' || e.criticality === 'critical' ? 'red' : e.type === 'incident' ? 'purple' : e.type === 'regulation' ? 'amber' : 'blue'
+                          return (
+                            <div key={i} className={`badge badge-${badgeColor}`} style={{ cursor: 'pointer' }} title={`${e.type} · ${e.id}`}>
+                              {e.id} ({e.type})
+                            </div>
+                          )
+                        })
+                      ) : (
+                        SAMPLE_ENTITIES.map((e, i) => (
+                          <div key={i} className={`badge badge-${e.color}`} style={{ cursor: 'pointer' }} title={e.type}>
+                            {e.text}
+                          </div>
+                        ))
+                      )}
                     </div>
                     <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
                       <button className="btn btn-primary btn-sm" onClick={() => navigate('/knowledge-graph')}>
