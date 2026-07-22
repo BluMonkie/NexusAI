@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { apiFetch } from '../services/apiClient'
+import { useAuth } from '../context/AuthContext'
 import { GRAPH_STATS } from '../data/knowledgeGraphData'
 import { Search, Filter, X, Info, FileText, Cpu, User, FileStack, ShieldCheck, AlertTriangle, Share2, ZoomIn, ZoomOut, Plus } from 'lucide-react'
 import * as d3 from 'd3'
@@ -25,6 +26,7 @@ const TYPE_LABELS = {
 }
 
 export default function KnowledgeGraph() {
+  const { user, openLoginModal } = useAuth()
   const svgRef = useRef(null)
   const [nodes, setNodes] = useState([])
   const [edges, setEdges] = useState([])
@@ -244,7 +246,7 @@ export default function KnowledgeGraph() {
             {filteredNodes.length} nodes · {filteredEdges.length} edges · Click node for details
           </p>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={() => setShowAddModal(true)}>
+        <button className="btn btn-primary btn-sm" onClick={() => user ? setShowAddModal(true) : openLoginModal()}>
           <Plus size={14} /> Add Equipment / Entity
         </button>
         {/* Search */}

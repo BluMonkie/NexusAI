@@ -23,6 +23,9 @@ export async function apiFetch(endpoint, options = {}) {
   const data = await response.json().catch(() => ({}))
 
   if (!response.ok) {
+    if (response.status === 401 || (data.error && (data.error.includes('Access denied') || data.error.includes('token')))) {
+      window.dispatchEvent(new CustomEvent('nexusiq_unauthorized'))
+    }
     throw new Error(data.error || `API request failed with status ${response.status}`)
   }
 

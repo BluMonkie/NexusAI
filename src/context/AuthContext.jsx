@@ -27,6 +27,10 @@ export function AuthProvider({ children }) {
       }
     }
     loadUser()
+
+    const handleUnauthorized = () => setShowLoginModal(true)
+    window.addEventListener('nexusiq_unauthorized', handleUnauthorized)
+    return () => window.removeEventListener('nexusiq_unauthorized', handleUnauthorized)
   }, [token])
 
   const login = async (email, password) => {

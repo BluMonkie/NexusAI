@@ -6,6 +6,7 @@ import {
   FileStack, BarChart2, ChevronRight, X, Eye, Trash2
 } from 'lucide-react'
 import { apiFetch } from '../services/apiClient'
+import { useAuth } from '../context/AuthContext'
 import {
   DOCUMENT_TYPES, INGESTION_STATS, ENTITY_TYPES
 } from '../data/dashboardData'
@@ -73,6 +74,7 @@ const SAMPLE_ENTITIES = [
 ]
 
 export default function DocumentIngestion() {
+  const { user, openLoginModal } = useAuth()
   const navigate = useNavigate()
   const [dragOver, setDragOver] = useState(false)
   const [pipelineStep, setPipelineStep] = useState(-1)
