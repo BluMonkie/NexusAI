@@ -91,7 +91,7 @@ router.post('/upload', authenticateToken, requireRole('Plant Engineer', 'Plant A
     })
 
     // Automatic Entity & Edge Extraction for Knowledge Graph
-    const { extractedNodes } = extractIndustrialEntities(extractedText, file.originalname, area)
+    const { extractedNodes } = await extractIndustrialEntities(extractedText, file.originalname, area)
 
     for (const node of extractedNodes) {
       if (node.id === docId) continue
