@@ -32,21 +32,23 @@ export async function parseDocument(filePath, fileType) {
         const parser = new PDFParse({ url: filePath })
         await parser.load()
         const textResult = await parser.getText()
-        extractedText = typeof textResult === 'string' ? textResult : (textResult.text || JSON.stringify(textResult))
-      } catch (pdfErr) {
-        console.warn('PDFParse failed/timed out, trying Uint8Array fallback:', pdfErr.message)
-        try {
-          const { PDFParse } = await import('pdf-parse')
-          const parser = new PDFParse({ data: new Uint8Array(fileBuffer) })
-          await parser.load()
-          const textResult = await parser.getText()
-          extractedText = typeof textResult === 'string' ? textResult : (textResult.text || '')
-        } catch (err2) {
-          console.warn('PDF string stream fallback:', err2.message)
-          const str = fileBuffer.toString('latin1')
-          const matches = str.match(/\(([^()]{2,120})\)/g) || []
-          extractedText = matches.map(m => m.slice(1, -1).replace(/\\/g, '')).join(' ')
+
+        // TextResult object has a `.text` property that is the full text string
+        if (typeof textResult === 'string') {
+          extractedText = textResult
+        } else if (textResult && typeof textResult.text === 'string') {
+          extractedText = textResult.text
+        } else if (textResult && textResult.pages) {
+          extractedText = textResult.pages.map(p => p.text || '').join('\n\n')
+        } else {
+          extractedText = JSON.stringify(textResult)
         }
+      } catch (pdfErr) {
+        console.warn('PDFParse url mode failed:', pdfErr.message)
+        // Fallback: raw string extraction from binary buffer
+        const str = fileBuffer.toString('latin1')
+        const matches = str.match(/\(([^()]{2,120})\)/g) || []
+        extractedText = matches.map(m => m.slice(1, -1).replace(/\\/g, '')).join(' ')
       }
     } else {
       extractedText = fileBuffer.toString('utf-8')
