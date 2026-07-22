@@ -107,6 +107,8 @@ router.post('/upload', authenticateToken, requireRole('Plant Engineer', 'Plant A
       if (!db.data.graph_edges.some(e => e.id === edgeId)) {
         db.data.graph_edges.push({
           id: edgeId,
+          source_id: docId,
+          target_id: node.id,
           source: docId,
           target: node.id,
           label: node.type === 'regulation' ? 'GOVERNED_BY' : node.type === 'incident' ? 'REPORTS' : 'REFERENCES',

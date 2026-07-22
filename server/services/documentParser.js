@@ -81,13 +81,13 @@ export function extractIndustrialEntities(text, fileName = '', defaultArea = 'Ar
   // Equipment Nodes
   for (const tag of eqMatches) {
     const upper = tag.toUpperCase()
-    if (['SOP', 'INC', 'TRN', 'REV', 'AREA', 'MAWP', 'LOTO', 'CAPA', 'CCR', 'PDF', 'TXT', 'DOC'].includes(upper)) continue
-    if (tag.startsWith('INC-') || tag.startsWith('TRN-') || tag.startsWith('SOP-') || tag.startsWith('OISD-')) continue
+    if (['SOP', 'INC', 'TRN', 'REV', 'AREA', 'MAWP', 'LOTO', 'CAPA', 'CCR', 'PDF', 'TXT', 'DOC', 'API', 'ISO'].includes(upper)) continue
+    if (tag.startsWith('INC-') || tag.startsWith('TRN-') || tag.startsWith('SOP-') || tag.startsWith('OISD-') || tag.startsWith('SRU-') || tag.startsWith('API') || tag.startsWith('ISO')) continue
 
     const labelContext = findContext(tag)
     let type = 'equipment'
     let criticality = 'medium'
-    if (tag.startsWith('D-') || tag.startsWith('V-') || tag.startsWith('C-') || tag.startsWith('T-')) criticality = 'high'
+    if (tag.startsWith('D-') || tag.startsWith('V-') || tag.startsWith('C-') || tag.startsWith('T-') || tag.startsWith('KD-')) criticality = 'high'
     if (tag.startsWith('BDV-') || tag.startsWith('PSV-') || tag.startsWith('EDV-') || tag.startsWith('EIV-')) criticality = 'critical'
 
     extractedNodes.push({
