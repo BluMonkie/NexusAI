@@ -1,16 +1,24 @@
 import fs from 'fs'
 
-export function chunkText(text, chunkSize = 500, overlap = 50) {
-  const words = text.split(/\s+/)
+export function chunkText(text, chunkSize = 180, overlap = 30) {
+  const paragraphs = text.split(/\n\s*\n/)
   const chunks = []
 
-  for (let i = 0; i < words.length; i += chunkSize - overlap) {
-    const chunk = words.slice(i, i + chunkSize).join(' ')
-    if (chunk.trim().length > 0) {
-      chunks.push(chunk)
+  for (const para of paragraphs) {
+    const words = para.split(/\s+/)
+    if (words.length <= chunkSize) {
+      if (para.trim().length > 10) chunks.push(para.trim())
+    } else {
+      for (let i = 0; i < words.length; i += chunkSize - overlap) {
+        const chunk = words.slice(i, i + chunkSize).join(' ')
+        if (chunk.trim().length > 10) {
+          chunks.push(chunk.trim())
+        }
+      }
     }
   }
-  return chunks
+
+  return chunks.length > 0 ? chunks : [text.trim()]
 }
 
 export async function parseDocument(filePath, fileType) {

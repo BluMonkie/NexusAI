@@ -29,24 +29,41 @@ router.post('/chat', authenticateToken, async (req, res) => {
 
     const chunks = db.data?.document_chunks || []
     const scoredChunks = chunks.map(chunk => {
-      let score = 0
+      let vecScore = 0
       if (queryVec && chunk.embedding) {
-        score = cosineSimilarity(queryVec, chunk.embedding)
-      } else {
-        score = keywordScore(chunk.content, message) * 0.25
+        vecScore = cosineSimilarity(queryVec, chunk.embedding)
       }
+      const kwScore = keywordScore(chunk.content, message)
+      const score = vecScore + kwScore * 0.5
       return { ...chunk, score }
-    }).sort((a, b) => b.score - a.score).slice(0, 4)
+    }).filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 6)
 
-    // 2. Fetch Relevant Context from Database Tables
-    const equipmentList = (db.data?.graph_nodes || []).filter(n => n.type === 'equipment').slice(0, 15).map(e => `[${e.id}] ${e.label} (${e.area})`).join('\n')
-    const workOrders = (db.data?.work_orders || []).slice(0, 5).map(w => `[${w.id}] ${w.equipment}: ${w.title} (${w.status})`).join('\n')
-    const incidents = (db.data?.incidents || []).slice(0, 5).map(i => `[${i.date}] ${i.equipment}: ${i.title} (${i.severity})`).join('\n')
-    const complianceGaps = (db.data?.compliance_rules || []).slice(0, 5).map(c => `[${c.standard}] ${c.title}`).join('\n')
+    // If no scored chunks above 0, fallback to top 4 chunks overall
+    const finalChunks = scoredChunks.length > 0
+      ? scoredChunks
+      : chunks.map(chunk => ({ ...chunk, score: keywordScore(chunk.content, message) }))
+          .sort((a, b) => b.score - a.score).slice(0, 4)
 
-    const retrievedDocText = scoredChunks.length > 0
-      ? scoredChunks.map(c => `[Chunk from Doc ${c.document_id}]: "${c.content}"`).join('\n\n')
-      : 'No specific document chunks matched the query vector.'
+    // 2. Fetch Relevant Context from Database Tables (Smart Query Matching)
+    const msgWords = message.toLowerCase().replace(/[^\w\s-]/g, ' ').split(/\s+/).filter(w => w.length >= 2)
+    const allNodes = db.data?.graph_nodes || []
+    const matchedNodes = allNodes.filter(n => {
+      const targetStr = `${n.id} ${n.label} ${n.type} ${n.area}`.toLowerCase()
+      return msgWords.some(w => targetStr.includes(w))
+    })
+
+    const equipmentNodes = (matchedNodes.length > 0 ? matchedNodes : allNodes)
+      .slice(0, 25)
+      .map(e => `[${e.id}] (${e.type.toUpperCase()}) ${e.label} - Area: ${e.area}, Status: ${e.status}`)
+      .join('\n')
+
+    const workOrders = (db.data?.work_orders || []).slice(0, 8).map(w => `[${w.id}] ${w.equipment}: ${w.title} (${w.status})`).join('\n')
+    const incidents = (db.data?.incidents || []).slice(0, 8).map(i => `[${i.date || i.id}] ${i.equipment || ''}: ${i.title} (${i.severity})`).join('\n')
+    const complianceGaps = (db.data?.compliance_rules || []).slice(0, 8).map(c => `[${c.standard}] ${c.title}`).join('\n')
+
+    const retrievedDocText = finalChunks.length > 0
+      ? finalChunks.map(c => `[Doc ${c.document_id} | Chunk ${c.chunk_index}]: "${c.content}"`).join('\n\n')
+      : 'No specific document chunks matched.'
 
     const dynamicSystemPrompt = `You are NEXUS IQ, an AI assistant for industrial knowledge management at an oil refinery / petrochemical complex.
 Answer user questions with technical accuracy, safety clarity, and concise bullet points.
@@ -55,7 +72,7 @@ Answer user questions with technical accuracy, safety clarity, and concise bulle
 ${retrievedDocText}
 
 === PLANT EQUIPMENT RECORDS ===
-${equipmentList}
+${equipmentNodes}
 
 === ACTIVE WORK ORDERS ===
 ${workOrders}

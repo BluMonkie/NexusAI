@@ -12,7 +12,7 @@ export async function generateEmbedding(text) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(2000),
+        signal: AbortSignal.timeout(8000),
         body: JSON.stringify({
           model: 'models/text-embedding-004',
           content: { parts: [{ text: text.slice(0, 2000) }] },
@@ -48,11 +48,21 @@ export function cosineSimilarity(vecA, vecB) {
 }
 
 export function keywordScore(text, query) {
-  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2)
+  if (!text || !query) return 0
+  const cleanQuery = query.replace(/[^\w\s-]/g, ' ').toLowerCase()
+  const queryWords = cleanQuery.split(/\s+/).filter(w => w.length >= 2)
   const textLower = text.toLowerCase()
+
   let score = 0
   for (const word of queryWords) {
-    if (textLower.includes(word)) score += 1
+    if (textLower.includes(word)) {
+      // Exact tag boost if query word contains numbers/hyphens e.g. h-215, p-215a
+      if (/[\d-]/.test(word)) {
+        score += 5
+      } else {
+        score += 1
+      }
+    }
   }
   return score
 }
